@@ -26,23 +26,56 @@ namespace ConflictsBot
 
             mCancelToken = mCancelTokenSource.Token;
 
-            mWebSocket = new ClientWebSocket();
-            mWebSocket.Options.RemoteCertificateValidationCallback += CertificateValidation;
-            mWebSocket.Options.KeepAliveInterval = TimeSpan.FromSeconds(20);
             mUri = new Uri(serverUrl);
 
             mProcessMessage = processMessage;
+
+            mOnClose = OnClose;
+        }
+
+        internal void ConnectWithRetries()
+        {
+            if (mbIsTryingConnection)
+                return;
+
+            mbIsTryingConnection = true;
+            try
+            {
+                while (true)
+                {
+                    if (ConnectAsync().Result)
+                        return;
+
+                    System.Threading.Thread.Sleep(5000);
+                }
+            }
+            finally
+            {
+                mbIsTryingConnection = false;
+            }
         }
 		
-        async void ConnectAsync()
+        async Task<bool> ConnectAsync()
         {
+            if (mWebSocket != null)
+                mWebSocket.Dispose();
+
+            mWebSocket = new ClientWebSocket();
+            mWebSocket.Options.RemoteCertificateValidationCallback += CertificateValidation;
+            mWebSocket.Options.KeepAliveInterval = TimeSpan.FromSeconds(20);
+
             await mWebSocket.ConnectAsync(mUri, mCancelToken);
+
             SendMessage(BuildLoginMessage(mApiKey));
             SendMessage(BuildRegisterTriggerMessage(BRANCH_ATTRIBUTE_CHANGED_TRIGGER_TYPE));
 
             mLog.InfoFormat("ConflictsBot [{0}] connected!", mName);
 
+            Console.WriteLine("ConflictsBot [{0}] connected!", mName);
+
             StartListen();
+
+            return mWebSocket.State == WebSocketState.Open;
         }
 
         static string BuildLoginMessage(string token)
@@ -84,6 +117,7 @@ namespace ConflictsBot
                         {
                             await
                                 mWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                            CallOnClose();
                         }
                         else
                         {
@@ -100,17 +134,24 @@ namespace ConflictsBot
             catch (Exception e)
             {
                 mLog.ErrorFormat("StartListen failed: {0}", e.Message);
-            }
-            finally
-            {
-                mWebSocket.Dispose();
+                CallOnClose();                
             }
         }
 
         void CallOnMessage(StringBuilder stringResult)
         {
-            if (mProcessMessage != null)
-                RunInTask(() => mProcessMessage(stringResult.ToString()));
+            if (mProcessMessage == null)
+                return;
+
+            RunInTask(() => mProcessMessage(stringResult.ToString()));
+        }
+
+        void CallOnClose()
+        {
+            if (mOnClose == null)
+                return;
+
+            mOnClose();
         }
 
         static void RunInTask(Action action)
@@ -161,16 +202,29 @@ namespace ConflictsBot
             return true;
         }
 
-        readonly ClientWebSocket mWebSocket;
+        void OnClose()
+        {
+            mLog.InfoFormat("OnClose was called!");
+
+            //await mWebSocket.CloseAsync(WebSocketCloseStatus.ProtocolError, string.Empty, mCancelToken);
+
+            ConnectWithRetries();
+        }
+
+        ClientWebSocket mWebSocket;
 
         readonly Uri mUri;
 
         readonly CancellationToken mCancelToken;
         readonly CancellationTokenSource mCancelTokenSource = new CancellationTokenSource();
 
+        volatile bool mbIsTryingConnection = false;
+
         readonly string mName;
         readonly string mApiKey;
         readonly Action<string> mProcessMessage;
+
+        readonly Action mOnClose;
 
         const int ReceiveChunkSize = 1024;
         const int SendChunkSize = 1024;
