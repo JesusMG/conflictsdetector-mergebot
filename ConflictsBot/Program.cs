@@ -18,6 +18,21 @@ namespace ConflictsBot
                     mLog.DebugFormat("Args: {0}", string.Join(" ", args));
 
             Console.WriteLine("Hello World!");
+
+            string api = "014B6147A6391E9F4F9AE67501ED690DC2D814FECBA0C1687D016575D4673EE3";
+
+            WebSocketClient ws = new WebSocketClient("ws://localhost:7111/plug", "ConflictsCheckerBot", api, OnAttributeChanged);
+
+            ws.ConnectWithRetries();
+
+            System.Threading.Tasks.Task.Delay(-1).Wait();
+
+        }
+
+        internal static void OnAttributeChanged(object state)
+        {
+            string message = (string)state;
+            Console.WriteLine("Received:" + message);
         }
 
         static void ConfigureLogging()
