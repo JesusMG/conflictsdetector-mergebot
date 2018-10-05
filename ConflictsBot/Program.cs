@@ -2,6 +2,8 @@
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using log4net;
 using log4net.Config;
@@ -10,23 +12,95 @@ namespace ConflictsBot
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
+        {            
+            BotArguments botArgs = new BotArguments(args);
+            botArgs.Parse();
+
+            ConfigureLogging(botArgs.BotName);
+
+            string argsStr = args == null ? string.Empty : string.Join(" ", args);
+            mLog.DebugFormat("Args: [{0}]. Are valid args?: [{1}]", argsStr, botArgs.AreValidArgs);
+
+            if (!botArgs.AreValidArgs || botArgs.HasToShowUsage)
+            {
+                PrintUsage(botArgs.AreValidArgs);
+                return 0;
+            }
+
+            BotConfiguration botConfig = BotConfiguration.Build(
+                botArgs.ConfigFilePath,
+                botArgs.RestApiUrl,
+                botArgs.WebSocketUrl);
+
+            string errorMessage = null;
+            if (!BotConfigurationChecker.CheckConfiguration(botConfig, out errorMessage))
+            {
+                Console.WriteLine(errorMessage);
+                mLog.ErrorFormat(
+                    "Bot [{0}] is going to finish: error found on argument check.", botArgs.BotName);
+
+                mLog.Error(errorMessage);
+                return 1;
+            }
+
+            ConfigureServicePoint();
+
+            LaunchBot(
+                botArgs.WebSocketUrl,
+                botArgs.RestApiUrl,
+                botConfig,
+                ToolConfig.GetBranchesFile(GetEscapedBotName(botArgs.BotName)),
+                botArgs.BotName,
+                botArgs.ApiKey);
+
+            mLog.InfoFormat(
+                "Bot [{0}] is going to finish: orderly shutdown.", botArgs.BotName);
+
+            return 0;
+        }
+
+        static void LaunchBot(
+            string webSocketUrl, 
+            string restApiUrl, 
+            BotConfiguration botConfig, 
+            string branchesToProcessFile, 
+            string botName, 
+            string apiKey)
         {
-            ConfigureLogging();
+            if (!Directory.Exists(Path.GetDirectoryName(branchesToProcessFile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(branchesToProcessFile));
 
-                if (args != null)
-                    mLog.DebugFormat("Args: {0}", string.Join(" ", args));
+            ConflictsCheckerBot bot = new ConflictsCheckerBot(
+                restApiUrl,  
+                botConfig, 
+                branchesToProcessFile,
+                botName);
 
-            Console.WriteLine("Hello World!");
+            try
+            {
+                bot.LoadBranchesToProcess();
+            }
+            catch (Exception e)
+            {
+                mLog.FatalFormat(
+                    "ConflictsBot [{0}] is going to finish because it couldn't load " +
+                    "the branches to process on startup. Reason: {1}", botName, e.Message);
+                mLog.DebugFormat("Stack trace:{0}{1}", Environment.NewLine, e.StackTrace);
+                throw;
+            }
 
-            string api = "014B6147A6391E9F4F9AE67501ED690DC2D814FECBA0C1687D016575D4673EE3";
+            ThreadPool.QueueUserWorkItem(bot.ProcessBranches);
 
-            WebSocketClient ws = new WebSocketClient("ws://localhost:7111/plug", "ConflictsCheckerBot", api, OnAttributeChanged);
+            WebSocketClient ws = new WebSocketClient(
+                webSocketUrl,
+                botName,
+                apiKey,
+                bot.OnAttributeChanged);
 
             ws.ConnectWithRetries();
 
-            System.Threading.Tasks.Task.Delay(-1).Wait();
-
+            Task.Delay(-1).Wait();
         }
 
         internal static void OnAttributeChanged(object state)
@@ -35,8 +109,24 @@ namespace ConflictsBot
             Console.WriteLine("Received:" + message);
         }
 
-        static void ConfigureLogging()
+        static void PrintUsage(bool bAreValidArgs)
         {
+            Console.WriteLine(string.Format("{0}Usage:", bAreValidArgs ? string.Empty : "Invalid arguments. "));
+            Console.WriteLine("\tjenkinsplug.exe --server <WEB_SOCKET_URL> --config <JSON_CONFIG_FILE_PATH>");
+            Console.WriteLine("\t                --apikey <WEB_SOCKET_CONN_KEY> --name <PLUG_NAME>");
+            Console.WriteLine();
+            Console.WriteLine("Example:");
+            Console.WriteLine("\tjenkinsplug.exe --server wss://localhost:7111/plug --name jenkis-main ");
+            Console.WriteLine("\t                --apikey 014B6147A6391E9F4F9AE67501ED690DC2D814FECBA0C1687D016575D4673EE3");
+            Console.WriteLine("\t                --config jenkis-main.conf");
+            Console.WriteLine();
+        }
+
+        static void ConfigureLogging(string botName)
+        {
+            if (string.IsNullOrEmpty(botName))
+                botName = DateTime.Now.ToString("yyyy_MM_dd_HH_mm");
+
             try
             {
                 string log4netpath = ToolConfig.GetHalBotLogConfigFile();
@@ -47,6 +137,9 @@ namespace ConflictsBot
                 var repo = log4net.LogManager.CreateRepository(
                     Assembly.GetEntryAssembly(),
                     typeof(log4net.Repository.Hierarchy.Hierarchy));
+
+                log4net.GlobalContext.Properties["Name"] = botName;
+         
 
                 log4net.Config.XmlConfigurator.Configure(repo, log4netConfig["log4net"]);
             }
@@ -63,7 +156,21 @@ namespace ConflictsBot
             ServicePointManager.DefaultConnectionLimit = 500;
         }
 
-        static readonly ILog mLog = LogManager.GetLogger(typeof(Program));
+        static string GetEscapedBotName(string botName)
+        {
+            char[] forbiddenChars = new char[] {
+                '/', '\\', '<', '>', ':', '"', '|', '?', '*', ' ' };
 
+            string cleanName = botName;
+            if (botName.IndexOfAny(forbiddenChars) != -1)
+            {
+                foreach (char character in forbiddenChars)
+                    cleanName = cleanName.Replace(character, '-');
+            }
+
+            return cleanName;
+        }
+
+        static readonly ILog mLog = LogManager.GetLogger(typeof(Program));
     }
 }
