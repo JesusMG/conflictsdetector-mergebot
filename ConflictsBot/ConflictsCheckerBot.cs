@@ -1,14 +1,10 @@
 using System;
+using System.Collections.Generic;
 
 namespace ConflictsBot
 {
     internal class ConflictsCheckerBot
     {
-        string mRestApiUrl;
-        BotConfiguration mBotConfig;
-        string mBranchesToProcessFile;
-        string mBotName;
-
         public ConflictsCheckerBot(
             string restApiUrl,
             BotConfiguration botConfig, 
@@ -19,11 +15,20 @@ namespace ConflictsBot
             mBotConfig = botConfig;
             mBranchesToProcessFile = branchesToProcessFile;
             mBotName = botName;
+
+            mRestApi = new RestApi(restApiUrl, botConfig.PlasticBotUserToken);
         }
 
         internal void LoadBranchesToProcess()
         {
-            throw new NotImplementedException();
+            List<Branch> branches = FindQueries.FindResolvedBranches(
+                mRestApi,
+                mBotConfig.Repository,
+                mBotConfig.BranchPrefix ?? string.Empty,
+                mBotConfig.PlasticStatusAttrConfig.Name,
+                mBotConfig.PlasticStatusAttrConfig.ResolvedValue);
+
+            BranchesQueueStorage.WriteQueuedBranches(branches, mBranchesToProcessFile);
         }
 
         internal void ProcessBranches(object state)
@@ -35,5 +40,12 @@ namespace ConflictsBot
         {
             throw new NotImplementedException();
         }
+
+        string mRestApiUrl;
+        BotConfiguration mBotConfig;
+        string mBranchesToProcessFile;
+        string mBotName;
+
+        RestApi mRestApi;
     }
 }
