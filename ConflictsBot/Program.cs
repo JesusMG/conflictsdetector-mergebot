@@ -112,13 +112,13 @@ namespace ConflictsBot
         static void PrintUsage(bool bAreValidArgs)
         {
             Console.WriteLine(string.Format("{0}Usage:", bAreValidArgs ? string.Empty : "Invalid arguments. "));
-            Console.WriteLine("\tjenkinsplug.exe --server <WEB_SOCKET_URL> --config <JSON_CONFIG_FILE_PATH>");
+            Console.WriteLine("\tConflictsBot.exe --server <WEB_SOCKET_URL> --config <JSON_CONFIG_FILE_PATH>");
             Console.WriteLine("\t                --apikey <WEB_SOCKET_CONN_KEY> --name <PLUG_NAME>");
             Console.WriteLine();
             Console.WriteLine("Example:");
-            Console.WriteLine("\tjenkinsplug.exe --server wss://localhost:7111/plug --name jenkis-main ");
+            Console.WriteLine("\tConflictsBot.exe --server wss://localhost:7111/plug --name jenkis-main ");
             Console.WriteLine("\t                --apikey 014B6147A6391E9F4F9AE67501ED690DC2D814FECBA0C1687D016575D4673EE3");
-            Console.WriteLine("\t                --config jenkis-main.conf");
+            Console.WriteLine("\t                --config conflictsbot.conf");
             Console.WriteLine();
         }
 
@@ -129,7 +129,7 @@ namespace ConflictsBot
 
             try
             {
-                string log4netpath = ToolConfig.GetHalBotLogConfigFile();
+                string log4netpath = ToolConfig.GetLogConfigFile();
 
                 XmlDocument log4netConfig = new XmlDocument();
                 log4netConfig.Load(File.OpenRead(log4netpath));
