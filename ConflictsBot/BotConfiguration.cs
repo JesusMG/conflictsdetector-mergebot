@@ -22,6 +22,8 @@ namespace ConflictsBot
 
             string trunkBranch = Field.GetString(config,"trunkBranch");
 
+            string branchPrefix = Field.GetString(config,"branchPrefix");
+
             string plasticBotUserToken = Field.GetString(config, "plasticBotUserToken");
 
             StatusProperty statusAttrConfig = StatusProperty.BuildFromConfig(config["plasticStatusAttributeGroup"]);
@@ -35,6 +37,7 @@ namespace ConflictsBot
                 webSocketServerUrl,
                 repository,
                 trunkBranch,
+                branchPrefix,
                 plasticBotUserToken,
                 statusAttrConfig,
                 issueTrackerConfig,
@@ -46,6 +49,7 @@ namespace ConflictsBot
             string webSocketServerUrl,
             string repository,
             string trunkBranch,
+            string branchPrefix,
             string plasticBotUserToken,
             StatusProperty plsticStatusAttrConfig,
             IssueTracker issueTrackerConfig,
@@ -55,6 +59,7 @@ namespace ConflictsBot
             WebSocketUrl = webSocketServerUrl;
             Repository = repository;
             TrunkBranch = trunkBranch;
+            BranchPrefix = branchPrefix;
             PlasticBotUserToken = plasticBotUserToken;
 
             PlasticStatusAttrConfig = plsticStatusAttrConfig;
@@ -69,6 +74,8 @@ namespace ConflictsBot
         internal string Repository { get; private set; }
 
         internal string TrunkBranch { get; private set; }
+
+        internal string BranchPrefix { get; private set; }
 
         internal string PlasticBotUserToken { get; private set; }
 

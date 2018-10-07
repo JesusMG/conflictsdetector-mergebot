@@ -28,6 +28,9 @@ namespace ConflictsBot
             if (string.IsNullOrEmpty(botConfig.TrunkBranch))
                 errorMessage += BuildFieldError("trunk branch");
 
+            if (string.IsNullOrEmpty(botConfig.BranchPrefix))
+                errorMessage += BuildFieldError("branch prefix");
+
             if (string.IsNullOrEmpty(botConfig.PlasticBotUserToken))
                 errorMessage += BuildFieldError("user api key");
 
