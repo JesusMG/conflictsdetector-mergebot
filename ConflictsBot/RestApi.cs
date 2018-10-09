@@ -10,9 +10,6 @@ namespace ConflictsBot
 {
     internal class RestApi
     {
-        readonly Uri mBaseUri;
-        string mPlasticBotUserToken;
-
         internal RestApi(string restApiUrl, string plasticBotUserToken)
         {
             mBaseUri = new Uri(restApiUrl);
@@ -41,6 +38,9 @@ namespace ConflictsBot
         {
             return new Uri(baseUri, partialUri);
         }
+
+        readonly Uri mBaseUri;
+        string mPlasticBotUserToken;
 
         internal static class ApiUris
         {
