@@ -8,12 +8,12 @@ namespace ConflictsBot
         public ConflictsCheckerBot(
             string restApiUrl,
             BotConfiguration botConfig, 
-            string branchesToProcessFile, 
+            string resolvedBranchesQueueFile, 
             string botName)
         {
             mRestApiUrl = restApiUrl;
             mBotConfig = botConfig;
-            mBranchesToProcessFile = branchesToProcessFile;
+            mResolvedBranchesQueueFile = resolvedBranchesQueueFile;
             mBotName = botName;
 
             mRestApi = new RestApi(restApiUrl, botConfig.PlasticBotUserToken);
@@ -28,7 +28,7 @@ namespace ConflictsBot
                 mBotConfig.PlasticStatusAttrConfig.Name,
                 mBotConfig.PlasticStatusAttrConfig.ResolvedValue);
 
-            BranchesQueueStorage.WriteQueuedBranches(branches, mBranchesToProcessFile);
+            FileStorage.ResolvedQueue.Write(branches, mResolvedBranchesQueueFile);
         }
 
         internal void ProcessBranches(object state)
@@ -43,7 +43,7 @@ namespace ConflictsBot
 
         string mRestApiUrl;
         BotConfiguration mBotConfig;
-        string mBranchesToProcessFile;
+        string mResolvedBranchesQueueFile;
         string mBotName;
 
         RestApi mRestApi;

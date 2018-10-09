@@ -50,7 +50,7 @@ namespace ConflictsBot
                 botArgs.WebSocketUrl,
                 botArgs.RestApiUrl,
                 botConfig,
-                ToolConfig.GetBranchesFile(GetEscapedBotName(botArgs.BotName)),
+                ToolConfig.GetResolvedBranchesStorageFile(GetEscapedBotName(botArgs.BotName)),
                 botArgs.BotName,
                 botArgs.ApiKey);
 
@@ -64,17 +64,17 @@ namespace ConflictsBot
             string webSocketUrl, 
             string restApiUrl, 
             BotConfiguration botConfig, 
-            string branchesToProcessFile, 
+            string resolvedBranchesQueueFile, 
             string botName, 
             string apiKey)
         {
-            if (!Directory.Exists(Path.GetDirectoryName(branchesToProcessFile)))
-                Directory.CreateDirectory(Path.GetDirectoryName(branchesToProcessFile));
+            if (!Directory.Exists(Path.GetDirectoryName(resolvedBranchesQueueFile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(resolvedBranchesQueueFile));
 
             ConflictsCheckerBot bot = new ConflictsCheckerBot(
                 restApiUrl,  
                 botConfig, 
-                branchesToProcessFile,
+                resolvedBranchesQueueFile,
                 botName);
 
             try

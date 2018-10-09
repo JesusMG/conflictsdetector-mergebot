@@ -11,9 +11,9 @@ namespace ConflictsBot
             return GetConfigFilePath(LOG_CONFIG_FILE);
         }
 
-        internal static string GetBranchesFile(string botName)
+        internal static string GetResolvedBranchesStorageFile(string botName)
         {
-            string branchesFileName = string.Format(BRANCHES_FILE, botName);
+            string branchesFileName = string.Format(RESOLVED_BRANCHES_FILE, botName);
 
             return GetConfigFilePath(branchesFileName);
         }
@@ -31,7 +31,7 @@ namespace ConflictsBot
             return Path.Combine(appPath, CONFIG_FOLDER_NAME);
         }
 
-        const string BRANCHES_FILE = "branches.{0}.txt";
+        const string RESOLVED_BRANCHES_FILE = "resolved_branches.{0}.txt";
         const string LOG_CONFIG_FILE = "conflictsbot.log.conf";
         const string CONFIG_FOLDER_NAME = "config";
     }
