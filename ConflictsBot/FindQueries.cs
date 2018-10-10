@@ -48,6 +48,24 @@ namespace ConflictsBot
             return value == null ? string.Empty : value.ToString();
         }
 
+        internal static string GetBranchName(
+            RestApi restApi, string repository, string branchId)
+        {
+            string query = string.Format("branch where id={0}", branchId);
+
+            JArray findResult = restApi.Find(
+                repository,
+                query,
+                UTC_SORTABLE_DATE_FORMAT,
+                "retrieve a single branch by ID",
+                new string[] { "name" });
+
+            if (findResult.Count == 0)
+                return string.Empty;
+
+            return GetStringValue((JObject)findResult[0], "name");
+        }
+
         const string UTC_SORTABLE_DATE_FORMAT = "yyyy-MM-ddTHH:mm:ssZ";
     }
 }

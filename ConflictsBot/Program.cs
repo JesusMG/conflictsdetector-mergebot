@@ -103,12 +103,6 @@ namespace ConflictsBot
             Task.Delay(-1).Wait();
         }
 
-        internal static void OnAttributeChanged(object state)
-        {
-            string message = (string)state;
-            Console.WriteLine("Received:" + message);
-        }
-
         static void PrintUsage(bool bAreValidArgs)
         {
             Console.WriteLine(string.Format("{0}Usage:", bAreValidArgs ? string.Empty : "Invalid arguments. "));
