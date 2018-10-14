@@ -55,31 +55,44 @@ namespace ConflictsBot
                     branch.FullName = FindQueries.GetBranchName(mRestApi, branch.Repository, branch.Id);
                 }
 
-                mLog.InfoFormat("Processing branch {0} attribute change...", branch.FullName);
-                ProcessBranch.Result result = ProcessBranch.TryProcessBranch(
-                    mRestApi, branch, mBotConfig, mBotName);
+                mLog.InfoFormat(
+                    "Checking if branch {0} has merge conflicts with {1} branch...",
+                    branch.FullName, mBotConfig.TrunkBranch);
 
-                if (result == ProcessBranch.Result.Ok)
+                if (!IsBranchTaskReady())
                 {
-                    mLog.InfoFormat("Branch {0} processing completed.", branch.FullName);
+                    mLog.InfoFormat("Branch {0} is not ready. It will be queued again.", branch.FullName);
+
+                    lock (mSyncLock)
+                    {
+                        mResolvedBranchesStorage.EnqueueBranch(branch);
+                    }
+                }
+
+                BranchMerger.Result result = BranchMerger.Try(mRestApi, branch, mBotConfig);
+
+                if (!result.HasManualConflicts)
+                {
+                    mLog.InfoFormat(
+                        "Branch {0} has no manual conflicts with {1} at this repository state.", 
+                        branch.FullName, mBotConfig.TrunkBranch);
+
+                    lock (mSyncLock)
+                    {
+                        mReadyToMergeBranchesStorage.EnqueueBranch(branch);
+                    }
                     continue;
                 }
 
-                if (result == ProcessBranch.Result.Failed)
-                {
-                    mLog.InfoFormat("Branch {0} processing failed.", branch.FullName);
-                    continue;
-                }
-
-                mLog.InfoFormat("Branch {0} is not ready. It will be queued again.", branch.FullName);
-
-                lock (mSyncLock)
-                {
-                    mResolvedBranchesStorage.EnqueueBranch(branch);
-                }
+                mLog.InfoFormat("Branch {0} has manual conflicts.", branch.FullName);              
 
                 Thread.Sleep(5000);
             }
+        }
+
+        bool IsBranchTaskReady()
+        {
+            throw new NotImplementedException();
         }
 
         readonly object mSyncLock = new object();
