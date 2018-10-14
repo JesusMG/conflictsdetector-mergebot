@@ -107,7 +107,7 @@ namespace ConflictsBot
                 webSocketUrl,
                 botName,
                 apiKey,
-                bot.OnAttributeChanged);
+                bot.OnEventReceived);
 
             ws.ConnectWithRetries();
 

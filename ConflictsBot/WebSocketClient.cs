@@ -68,6 +68,7 @@ namespace ConflictsBot
 
             SendMessage(BuildLoginMessage(mApiKey));
             SendMessage(BuildRegisterTriggerMessage(BRANCH_ATTRIBUTE_CHANGED_TRIGGER_TYPE));
+            SendMessage(BuildRegisterTriggerMessage(NEW_CHANGESETS_CHANGED_TRIGGER_TYPE));
 
             mLog.InfoFormat("ConflictsBot [{0}] connected!", mName);
 
@@ -229,7 +230,8 @@ namespace ConflictsBot
         const int ReceiveChunkSize = 1024;
         const int SendChunkSize = 1024;
 
-        const string BRANCH_ATTRIBUTE_CHANGED_TRIGGER_TYPE = "branchAttributeChanged";
+        internal const string BRANCH_ATTRIBUTE_CHANGED_TRIGGER_TYPE = "branchAttributeChanged";
+        internal const string NEW_CHANGESETS_CHANGED_TRIGGER_TYPE = "newChangesets";
         
         static readonly ILog mLog = LogManager.GetLogger(typeof(WebSocketClient));
     }
