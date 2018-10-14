@@ -22,14 +22,14 @@ namespace ConflictsBot
             Comment = comment;
         }
 
-        internal string GetShortName()
+        internal static string GetShortName(string fullName)
         {
-            int separatorIndex = FullName.LastIndexOf('/');
+            int separatorIndex = fullName.LastIndexOf('/');
 
             if (separatorIndex == -1)
-                return FullName;
+                return fullName;
 
-            return FullName.Substring(separatorIndex + 1);
+            return fullName.Substring(separatorIndex + 1);
         }
     }
 }
