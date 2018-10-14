@@ -73,7 +73,8 @@ namespace ConflictsBot
                     }
                 }
 
-                BranchMerger.Result result = BranchMerger.Try(mRestApi, branch, mBotConfig);
+                BranchMerger.Result result = BranchMerger.Try(
+                    mRestApi, branch.Repository, branch.FullName, mBotConfig.TrunkBranch);
 
                 if (!result.HasManualConflicts)
                 {
