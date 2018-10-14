@@ -18,6 +18,13 @@ namespace ConflictsBot
             return GetConfigFilePath(branchesFileName);
         }
 
+        internal static string GetReadyToMergeBranchesStorageFile(string botName)
+        {
+            string branchesFileName = string.Format(READY_TO_MERGE_BRANCHES_FILE, botName);
+
+            return GetConfigFilePath(branchesFileName);            
+        }
+
         static string GetConfigFilePath(string configfile)
         {
             return Path.Combine(GetConfigDirectory(), configfile);
@@ -32,6 +39,8 @@ namespace ConflictsBot
         }
 
         const string RESOLVED_BRANCHES_FILE = "resolved_branches.{0}.txt";
+
+        const string READY_TO_MERGE_BRANCHES_FILE ="ready_merge_branches.{0}.txt";
         const string LOG_CONFIG_FILE = "conflictsbot.log.conf";
         const string CONFIG_FOLDER_NAME = "config";
     }

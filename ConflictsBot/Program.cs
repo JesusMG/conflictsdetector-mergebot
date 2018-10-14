@@ -51,6 +51,7 @@ namespace ConflictsBot
                 botArgs.RestApiUrl,
                 botConfig,
                 ToolConfig.GetResolvedBranchesStorageFile(GetEscapedBotName(botArgs.BotName)),
+                ToolConfig.GetReadyToMergeBranchesStorageFile(GetEscapedBotName(botArgs.BotName)),
                 botArgs.BotName,
                 botArgs.ApiKey);
 
@@ -64,17 +65,27 @@ namespace ConflictsBot
             string webSocketUrl, 
             string restApiUrl, 
             BotConfiguration botConfig, 
-            string resolvedBranchesQueueFile, 
+            string resolvedBranchesQueueFile,
+            string readyToMergeBranchesFile,
             string botName, 
             string apiKey)
         {
             if (!Directory.Exists(Path.GetDirectoryName(resolvedBranchesQueueFile)))
                 Directory.CreateDirectory(Path.GetDirectoryName(resolvedBranchesQueueFile));
 
+            if (!Directory.Exists(Path.GetDirectoryName(readyToMergeBranchesFile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(readyToMergeBranchesFile));
+
+            FileStorage resolvedBranchesQueueStorage = new FileStorage(resolvedBranchesQueueFile);
+            FileStorage readyToMergeBranchesStorage = new FileStorage(readyToMergeBranchesFile);
+
+            RestApi restApi = new RestApi(restApiUrl, botConfig.PlasticBotUserToken);
+
             ConflictsCheckerBot bot = new ConflictsCheckerBot(
-                restApiUrl,  
+                restApi,  
                 botConfig, 
-                resolvedBranchesQueueFile,
+                resolvedBranchesQueueStorage,
+                readyToMergeBranchesStorage,
                 botName);
 
             try

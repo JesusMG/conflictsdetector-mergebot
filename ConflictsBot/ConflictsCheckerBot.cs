@@ -8,17 +8,17 @@ namespace ConflictsBot
     internal class ConflictsCheckerBot
     {
         public ConflictsCheckerBot(
-            string restApiUrl,
-            BotConfiguration botConfig, 
-            string resolvedBranchesQueueFile, 
+            RestApi restApi,
+            BotConfiguration botConfig,
+            FileStorage resolvedBranchesStorage,
+            FileStorage readyToMergeBranchesStorage,
             string botName)
         {
-            mRestApiUrl = restApiUrl;
+            mRestApi = restApi;
             mBotConfig = botConfig;
-            mResolvedBranchesQueueFile = resolvedBranchesQueueFile;
+            mResolvedBranchesStorage = resolvedBranchesStorage;
+            mReadyToMergeBranchesStorage = readyToMergeBranchesStorage;
             mBotName = botName;
-
-            mRestApi = new RestApi(restApiUrl, botConfig.PlasticBotUserToken);
         }
 
         internal void LoadBranchesToProcess()
@@ -30,7 +30,7 @@ namespace ConflictsBot
                 mBotConfig.PlasticStatusAttrConfig.Name,
                 mBotConfig.PlasticStatusAttrConfig.ResolvedValue);
 
-            FileStorage.ResolvedQueue.Write(branches, mResolvedBranchesQueueFile);
+            mResolvedBranchesStorage.Write(branches);
         }
 
         internal void OnAttributeChanged(string obj)
@@ -45,13 +45,13 @@ namespace ConflictsBot
                 Branch branch;
                 lock (mSyncLock)
                 {
-                    if (!FileStorage.ResolvedQueue.HasQueuedBranches(mResolvedBranchesQueueFile))
+                    if (!mResolvedBranchesStorage.HasQueuedBranches())
                     {
                         Monitor.Wait(mSyncLock, 10000);
                         continue;
                     }
 
-                    branch = FileStorage.ResolvedQueue.DequeueBranch(mResolvedBranchesQueueFile);
+                    branch = mResolvedBranchesStorage.DequeueBranch();
                     branch.FullName = FindQueries.GetBranchName(mRestApi, branch.Repository, branch.Id);
                 }
 
@@ -75,7 +75,7 @@ namespace ConflictsBot
 
                 lock (mSyncLock)
                 {
-                    FileStorage.ResolvedQueue.EnqueueBranch(branch, mResolvedBranchesQueueFile);
+                    mResolvedBranchesStorage.EnqueueBranch(branch);
                 }
 
                 Thread.Sleep(5000);
@@ -84,9 +84,9 @@ namespace ConflictsBot
 
         readonly object mSyncLock = new object();
 
-        string mRestApiUrl;
         BotConfiguration mBotConfig;
-        string mResolvedBranchesQueueFile;
+        FileStorage mResolvedBranchesStorage;
+        FileStorage mReadyToMergeBranchesStorage;
         string mBotName;
         RestApi mRestApi;
         static readonly ILog mLog = LogManager.GetLogger(typeof(ConflictsCheckerBot));
