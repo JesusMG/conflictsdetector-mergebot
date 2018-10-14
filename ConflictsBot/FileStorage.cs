@@ -38,17 +38,6 @@ namespace ConflictsBot
             return GetQueuedBranches().Count > 0;
         }
 
-        List<Branch> GetQueuedBranches()
-        {
-            List<Branch> branches = new List<Branch>();
-            using (StreamReader file = new StreamReader(mStorageFilePath))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                branches = (List<Branch>)serializer.Deserialize(file, typeof(List<Branch>));
-            }
-            return branches;
-        }
-
         internal void EnqueueBranch(Branch branch)
         {
             if (Contains(branch.Repository, branch.Id))
@@ -80,6 +69,29 @@ namespace ConflictsBot
         {
             List<Branch> branches = GetQueuedBranches();
             return BranchFinder.IndexOf(branches, repository, branchId) > -1;
+        }
+
+        internal void RemoveBranch(string repository, string branchId)
+        {
+            List<Branch> queuedBranches = GetQueuedBranches();
+
+            int index = BranchFinder.IndexOf(queuedBranches, repository, branchId);
+            if (index == -1)
+                return;
+
+            queuedBranches.RemoveAt(index);
+            Write(queuedBranches);
+        }
+
+        List<Branch> GetQueuedBranches()
+        {
+            List<Branch> branches = new List<Branch>();
+            using (StreamReader file = new StreamReader(mStorageFilePath))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                branches = (List<Branch>)serializer.Deserialize(file, typeof(List<Branch>));
+            }
+            return branches;
         }
 
         static void LogException(string message, Exception e, params string[] args)
