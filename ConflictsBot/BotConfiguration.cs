@@ -106,8 +106,12 @@ namespace ConflictsBot
 
             internal static IssueTracker BuildFromConfig(JToken jToken)
             {
+                string plugName = Field.GetString(jToken, "plugName");
+                if (string.IsNullOrEmpty(plugName) || plugName.ToLowerInvariant().Trim().Equals("none"))
+                    return null;
+
                 IssueTracker result = new IssueTracker(
-                    Field.GetString(jToken, "plugName"),
+                    plugName,
                     Field.GetString(jToken, "projectKey"),
                     Field.GetString(jToken, "titleField"),
                     StatusProperty.BuildFromConfig(jToken["statusFieldGroup"]));
@@ -160,6 +164,11 @@ namespace ConflictsBot
 
             internal static Notifier BuildFromConfig(JToken jToken)
             {
+                string plugName = Field.GetString(jToken, "plugName");
+
+                if (string.IsNullOrEmpty(plugName) || plugName.ToLowerInvariant().Trim().Equals("none"))
+                    return null;
+
                 string[] rawRecipientsArray =
                     Field.GetString(jToken, "fixedRecipientsPlasticUsers").
                     Split(
