@@ -59,9 +59,13 @@ namespace ConflictsBot
                     "Checking if branch {0} has merge conflicts with {1} branch...",
                     branch.FullName, mBotConfig.TrunkBranch);
 
-                if (!IsBranchTaskReady())
+                if (!HasToTriggerTryMerge(
+                    mRestApi, 
+                    mBotConfig.IssueTrackerConfig, 
+                    branch.GetShortName(), 
+                    mBotConfig.BranchPrefix))
                 {
-                    mLog.InfoFormat("Branch {0} is not ready. It will be queued again.", branch.FullName);
+                    mLog.InfoFormat("Branch {0} is not ready to trigger a try-merge. It will be queued again.", branch.FullName);
 
                     lock (mSyncLock)
                     {
@@ -76,6 +80,8 @@ namespace ConflictsBot
                     mLog.InfoFormat(
                         "Branch {0} has no manual conflicts with {1} at this repository state.", 
                         branch.FullName, mBotConfig.TrunkBranch);
+                    
+                    //NOTIFY
 
                     lock (mSyncLock)
                     {
@@ -90,9 +96,53 @@ namespace ConflictsBot
             }
         }
 
-        bool IsBranchTaskReady()
+        static bool HasToTriggerTryMerge(
+            IRestApi restApi,
+            BotConfiguration.IssueTracker issueTrackerConfig, 
+            string branchShortName, 
+            string branchPrefixToTrack)
         {
-            throw new NotImplementedException();
+            string taskNumber = GetTaskNumber(branchShortName, branchPrefixToTrack);
+            if (taskNumber == null)
+                return false;
+
+            if (issueTrackerConfig == null) //no issue tracker config -> just check the branch status attr
+                return true;
+
+            mLog.InfoFormat("Checking if issue tracker [{0}] is available...", issueTrackerConfig.PlugName);
+            if (!restApi.IsIssueTrackerConnected(issueTrackerConfig.PlugName))
+            {
+                mLog.WarnFormat("Issue tracker [{0}] is NOT available...", issueTrackerConfig.PlugName);
+                return false;
+            }
+
+            mLog.InfoFormat("Checking if task {0} is ready in the issue tracker [{1}].",
+                taskNumber, issueTrackerConfig.PlugName);
+
+            string status = restApi.GetIssueTrackerField(
+                issueTrackerConfig.PlugName, 
+                issueTrackerConfig.ProjectKey,
+                taskNumber, 
+                issueTrackerConfig.StatusField.Name);
+
+            mLog.DebugFormat("Issue tracker status for task [{0}]: expected [{1}], was [{2}]",
+                taskNumber, issueTrackerConfig.StatusField.ResolvedValue, status);
+
+            return status.ToLowerInvariant().Trim().Equals(
+                issueTrackerConfig.StatusField.ResolvedValue.ToLowerInvariant().Trim());
+        }
+
+        static string GetTaskNumber(
+            string branchShortName,
+            string branchPrefixToTrack)
+        {            
+            if (string.IsNullOrEmpty(branchPrefixToTrack))
+                return branchShortName;
+
+            if (branchShortName.StartsWith(branchPrefixToTrack, StringComparison.InvariantCultureIgnoreCase))
+                return branchShortName.Substring(branchPrefixToTrack.Length);
+
+            return null;
         }
 
         readonly object mSyncLock = new object();

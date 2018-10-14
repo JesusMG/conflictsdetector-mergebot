@@ -8,14 +8,19 @@ using Newtonsoft.Json.Linq;
 
 namespace ConflictsBot
 {
-    public interface IRestApi
+    public partial interface IRestApi
     {
         JArray Find(
             string repoName,
             string query,
             string queryDateFormat,
             string actionDescription,
-            string[] fields);        
+            string[] fields);
+        bool IsIssueTrackerConnected(string plugName);
+        string GetIssueTrackerField(string plugName, string projectKey, string taskNumber, string name);
+        /*
+        
+        */ 
     }
 
     public class RestApi : IRestApi
@@ -42,6 +47,40 @@ namespace ConflictsBot
 
             return Internal.MakeApiRequest<JArray>(
                 endpoint, HttpMethod.Get, actionDescription, mPlasticBotUserToken);
+        }
+
+        public bool IsIssueTrackerConnected(string plugName)
+        {
+            Uri endpoint = ApiUris.GetFullUri(
+                    mBaseUri, ApiEndpoints.Issues.IsConnected,
+                    plugName);
+
+                string actionDescription = string.Format("test connection to '{0}'", plugName);
+
+                SingleResponse response = Internal.MakeApiRequest<SingleResponse>(
+                    endpoint, HttpMethod.Get, actionDescription, mPlasticBotUserToken);
+                
+                bool flag;
+                if (Boolean.TryParse(response.Value, out flag))
+                    return flag;
+
+                return false;
+        }
+
+        public string GetIssueTrackerField(string plugName, string projectKey, string taskNumber, string fieldName)
+        {
+            Uri endpoint = ApiUris.GetFullUri(
+                    mBaseUri, ApiEndpoints.Issues.GetIssueField,
+                    plugName, projectKey, taskNumber, fieldName);
+
+                string actionDescription = string.Format(
+                    "get field '{0}' of issue {1}-{2} in {3}",
+                    fieldName, projectKey, taskNumber, plugName);
+
+                 SingleResponse response = Internal.MakeApiRequest<SingleResponse>(
+                    endpoint, HttpMethod.Get, actionDescription, mPlasticBotUserToken);
+                
+                return response.Value;
         }
 
         static Uri GetFullUri(Uri baseUri, string partialUri)
@@ -247,6 +286,11 @@ namespace ConflictsBot
                         return string.Empty;
                 }
             }
+        }
+
+        class SingleResponse
+        {
+               public string Value { get; set; }
         }
 
         static readonly ILog mLog = LogManager.GetLogger(typeof(RestApi));

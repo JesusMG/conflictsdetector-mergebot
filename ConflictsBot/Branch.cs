@@ -21,5 +21,15 @@ namespace ConflictsBot
             Owner = owner;
             Comment = comment;
         }
+
+        internal string GetShortName()
+        {
+            int separatorIndex = FullName.LastIndexOf('/');
+
+            if (separatorIndex == -1)
+                return FullName;
+
+            return FullName.Substring(separatorIndex + 1);
+        }
     }
 }
