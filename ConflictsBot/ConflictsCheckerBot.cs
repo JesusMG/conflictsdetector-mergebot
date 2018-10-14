@@ -8,7 +8,7 @@ namespace ConflictsBot
     internal class ConflictsCheckerBot
     {
         public ConflictsCheckerBot(
-            RestApi restApi,
+            IRestApi restApi,
             BotConfiguration botConfig,
             FileStorage resolvedBranchesStorage,
             FileStorage readyToMergeBranchesStorage,
@@ -88,7 +88,7 @@ namespace ConflictsBot
         FileStorage mResolvedBranchesStorage;
         FileStorage mReadyToMergeBranchesStorage;
         string mBotName;
-        RestApi mRestApi;
+        IRestApi mRestApi;
         static readonly ILog mLog = LogManager.GetLogger(typeof(ConflictsCheckerBot));
     }
 }

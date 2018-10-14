@@ -79,7 +79,7 @@ namespace ConflictsBot
             FileStorage resolvedBranchesQueueStorage = new FileStorage(resolvedBranchesQueueFile);
             FileStorage readyToMergeBranchesStorage = new FileStorage(readyToMergeBranchesFile);
 
-            RestApi restApi = new RestApi(restApiUrl, botConfig.PlasticBotUserToken);
+            IRestApi restApi = new RestApi(restApiUrl, botConfig.PlasticBotUserToken);
 
             ConflictsCheckerBot bot = new ConflictsCheckerBot(
                 restApi,  

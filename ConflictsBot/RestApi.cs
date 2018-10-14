@@ -8,7 +8,17 @@ using Newtonsoft.Json.Linq;
 
 namespace ConflictsBot
 {
-    internal class RestApi
+    public interface IRestApi
+    {
+        JArray Find(
+            string repoName,
+            string query,
+            string queryDateFormat,
+            string actionDescription,
+            string[] fields);        
+    }
+
+    public class RestApi : IRestApi
     {
         internal RestApi(string restApiUrl, string plasticBotUserToken)
         {
@@ -16,7 +26,7 @@ namespace ConflictsBot
             mPlasticBotUserToken = plasticBotUserToken;
         }
 
-        internal JArray Find(
+        public JArray Find(
             string repoName,
             string query,
             string queryDateFormat,

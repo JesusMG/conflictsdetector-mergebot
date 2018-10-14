@@ -7,7 +7,7 @@ namespace ConflictsBot
     internal static class FindQueries
     {
         internal static List<Branch> FindResolvedBranches(
-            RestApi restApi,
+            IRestApi restApi,
             string repository,
             string prefix,
             string statusAttributeName,
@@ -42,14 +42,9 @@ namespace ConflictsBot
             }
             return result;
         }
-        static string GetStringValue(JObject obj, string fieldName)
-        {
-            object value = obj[fieldName];
-            return value == null ? string.Empty : value.ToString();
-        }
 
         internal static string GetBranchName(
-            RestApi restApi, string repository, string branchId)
+            IRestApi restApi, string repository, string branchId)
         {
             string query = string.Format("branch where id={0}", branchId);
 
@@ -64,6 +59,12 @@ namespace ConflictsBot
                 return string.Empty;
 
             return GetStringValue((JObject)findResult[0], "name");
+        }
+
+        static string GetStringValue(JObject obj, string fieldName)
+        {
+            object value = obj[fieldName];
+            return value == null ? string.Empty : value.ToString();
         }
 
         const string UTC_SORTABLE_DATE_FORMAT = "yyyy-MM-ddTHH:mm:ssZ";
