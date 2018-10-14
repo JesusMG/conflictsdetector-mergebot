@@ -85,7 +85,7 @@ namespace ConflictsBot
             if (!IsEventOfValidTrackedBranch(e, mBotConfig))
                 return;
 
-            if (!AreEqualIgnoreCase(e.AttributeName, mBotConfig.PlasticStatusAttrConfig.ResolvedValue))
+            if (!AreEqualIgnoreCase(e.AttributeName, mBotConfig.PlasticStatusAttrConfig.Name))
                 return;
 
             lock (mSyncLock)
