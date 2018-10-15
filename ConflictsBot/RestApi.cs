@@ -81,7 +81,11 @@ namespace ConflictsBot
             return false;
         }
 
-        public string GetIssueTrackerField(string plugName, string projectKey, string taskNumber, string fieldName)
+        public string GetIssueTrackerField(
+            string plugName, 
+            string projectKey, 
+            string taskNumber, 
+            string fieldName)
         {
             Uri endpoint = ApiUris.GetFullUri(
                 mBaseUri, 
@@ -101,7 +105,10 @@ namespace ConflictsBot
             return response.Value;
         }
 
-        public RestApi.MergeToResponse MergeBranchToShelve(string repository, string fullName, string trunkBranch)
+        public RestApi.MergeToResponse MergeBranchToShelve(
+            string repository, 
+            string fullName, 
+            string trunkBranch)
         {
             MergeToRequest request = new MergeToRequest()
             {
@@ -110,7 +117,7 @@ namespace ConflictsBot
                 Destination = trunkBranch,
                 Comment = string.Empty,
                 CreateShelve = true,
-                EnsureNoDstChanges = true
+                EnsureNoDstChanges = false
             };
 
             Uri endpoint = ApiUris.GetFullUri(
