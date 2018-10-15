@@ -201,6 +201,9 @@ namespace ConflictsBot
                 BranchMerger.Result result = BranchMerger.Try(
                     mRestApi, branch.Repository, branch.FullName, mBotConfig.TrunkBranch);
 
+                if (result == null) //branch already merged!
+                    continue;
+
                 if (!result.HasManualConflicts)
                 {
                     mLog.InfoFormat(

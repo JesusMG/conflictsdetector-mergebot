@@ -29,8 +29,15 @@ namespace ConflictsBot
                     "Try merge from branch {0} to branch {1} finished with status {2} and message: {3}", 
                     srcTaskBranch, dstTrunkBranch, mergeToResult.Status, mergeToResult.Message);
 
-                if (mergeToResult.Status == RestApi.MergeToResponse.MergeToResultStatus.OK ||
-                    mergeToResult.Status ==  RestApi.MergeToResponse.MergeToResultStatus.MergeNotNeeded)
+                if (mergeToResult.Status == RestApi.MergeToResponse.MergeToResultStatus.MergeNotNeeded)
+                {
+                    mLog.InfoFormat("Branch {0} is already merged in branch {1}. Won't be processed anymore...",
+                        srcTaskBranch, dstTrunkBranch);
+
+                    return null;
+                }
+
+                if (mergeToResult.Status == RestApi.MergeToResponse.MergeToResultStatus.OK)
                 {                
                     shelveId = mergeToResult.ChangesetNumber;
                     opResult.HasManualConflicts = false;
