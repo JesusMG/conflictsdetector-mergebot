@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
+
 using log4net;
 using Newtonsoft.Json;
 
@@ -86,6 +86,10 @@ namespace ConflictsBot
         List<Branch> GetQueuedBranches()
         {
             List<Branch> branches = new List<Branch>();
+
+            if (!File.Exists(mStorageFilePath))
+                return branches;
+
             using (StreamReader file = new StreamReader(mStorageFilePath))
             {
                 JsonSerializer serializer = new JsonSerializer();
