@@ -65,6 +65,7 @@ namespace ConflictsBot
             if (!CheckValidStatusPropertyFields(
                     plasticAttributeConfig,
                     "of the status attribute for Plastic config",
+                    true,
                     out propertyErrorMessage))
             {
                 errorMessage += propertyErrorMessage;
@@ -85,13 +86,11 @@ namespace ConflictsBot
             if (string.IsNullOrEmpty(issueTrackerConfig.PlugName))
                 errorMessage += BuildFieldError("plug name for Issue Tracker config");
 
-            if (string.IsNullOrEmpty(issueTrackerConfig.TitleField))
-                errorMessage += BuildFieldError("title field for Issue Tracker config");
-
             string propertyErrorMessage = null;
             if (!CheckValidStatusPropertyFields(
                     issueTrackerConfig.StatusField,
                     "of the status field for Issue Tracker config",
+                    false,
                     out propertyErrorMessage))
                 errorMessage += propertyErrorMessage;
 
@@ -123,6 +122,7 @@ namespace ConflictsBot
         static bool CheckValidStatusPropertyFields(
             BotConfiguration.StatusProperty statusAttributeConfig,
             string groupNameMessage,
+            bool bCheckMergedValue,
             out string errorMessage)
         {
             errorMessage = string.Empty;
@@ -135,6 +135,9 @@ namespace ConflictsBot
 
             if (string.IsNullOrEmpty(statusAttributeConfig.FailedValue))
                 errorMessage += BuildFieldError("failed value " + groupNameMessage);
+
+            if (!bCheckMergedValue)
+                return string.IsNullOrEmpty(errorMessage);
 
             if (string.IsNullOrEmpty(statusAttributeConfig.MergedValue))
                 errorMessage += BuildFieldError("merged value " + groupNameMessage);
