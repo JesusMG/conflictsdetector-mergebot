@@ -1,12 +1,16 @@
+using System;
+
 namespace ConflictsBot
 {
-    internal class Branch
+    public class Branch
     {
-        internal string Repository;
-        internal string Id;
-        internal string FullName;
-        internal string Owner;
-        internal string Comment;
+        public string Repository;
+        public string Id;
+        public string FullName;
+        public string Owner;
+        public string Comment;
+
+        public Branch() { }
 
         internal Branch(
             string repository,
@@ -30,6 +34,18 @@ namespace ConflictsBot
                 return fullName;
 
             return fullName.Substring(separatorIndex + 1);
+        }
+
+        internal static string NormalizeFullName(string branchFullName)
+        {
+            branchFullName = branchFullName.Trim();
+            if (branchFullName.StartsWith("br:"))
+                branchFullName = branchFullName.Remove("br:".Length);
+
+            if (branchFullName.StartsWith("/"))
+                return branchFullName;
+
+            return "/" + branchFullName;
         }
     }
 }
