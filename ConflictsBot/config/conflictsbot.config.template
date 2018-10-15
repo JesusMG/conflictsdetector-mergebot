@@ -3,19 +3,19 @@
       "name":"repository",
       "displayName":"Repository",
       "type":"string",
-      "description":"The repository that the bot will monitor."
+      "description":"The repository the ConflictsBot will be attached to."
    },
    {  
       "name":"branchPrefix",
       "displayName":"Branch prefix",
       "type":"string",
-      "description":"The prefix of the branches to check if they have conflicts with trunk branch. Example: 'PRJ-' prefix will consider branches named like 'PRJ-1234'. This is the same prefix that you use to link branches to the issue tracker (if any)."
+      "description":"The prefix of the branches to check if they have conflicts with trunk branch. Example: 'PRJ-' prefix will consider branches named like 'PRJ-1234'. This is the same prefix that you use to link branches to the issue tracker (if any configured)."
    },
    {  
       "name":"trunkBranch",
-      "displayName":"Trunk branch",
+      "displayName":"Trunk branch (Merge destination branch)",
       "type":"string",
-      "description":"ConflicsBot will check if a tracked branch has manual conflicts with this one."
+      "description":"ConflicsBot will check if a tracked branch has manual conflicts with this one (e.g. '/main' or 'main')."
    },
    {  
       "name":"plasticBotUserToken",
