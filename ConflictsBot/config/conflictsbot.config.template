@@ -33,25 +33,25 @@
             "name":"statusAttribute",
             "displayName":"Name of 'status' attribute",
             "type":"string",
-            "description":"The attribute name that defines the 'status' of a branch."
+            "description":"The attribute name that defines the lifecycle's status of a branch (e.g. 'status')."
          },
          {  
             "name":"resolvedValue",
             "displayName":"'Resolved' status value",
             "type":"string",
-            "description":"The status value that defines a branch is ready to be processed by ConflictsBot and check whether the branch has manual merge conflicts."
+            "description":"The status value that means a branch is ready to be processed by ConflictsBot and hence to check whether the branch has manual merge conflicts (e.g. 'resolved')."
          },
          {  
             "name":"failedValue",
             "displayName":"Failed status value",
             "type":"string",
-            "description":"The status value to set when a task fails if the branch has manual merge conflicts."
+            "description":"The status value to set if the branch has manual merge conflicts (e.g. 'failed')."
          },
          {  
             "name":"mergedValue",
             "displayName":"Merged status value",
             "type":"string",
-            "description":"The status value that defines a branch is integrated (Once a branch is integrated, ConflicsBot won't process that branch anymore)."
+            "description":"The status value that means a branch is integrated. Once a branch is integrated, ConflicsBot won't process that branch anymore (e.g. 'merged')."
          }
       ]
    },
