@@ -83,7 +83,7 @@ namespace ConflictsBot
             Write(queuedBranches);
         }
 
-        List<Branch> GetQueuedBranches()
+        internal List<Branch> GetQueuedBranches()
         {
             List<Branch> branches = new List<Branch>();
 
@@ -106,25 +106,25 @@ namespace ConflictsBot
 
         string mStorageFilePath;
         static readonly ILog mLog = LogManager.GetLogger(typeof(FileStorage));
+    }
 
-        static class BranchFinder
+    internal static class BranchFinder
+    {
+        internal static int IndexOf(
+            List<Branch> branches, string repository, string branchId)
         {
-            internal static int IndexOf(
-                List<Branch> branches, string repository, string branchId)
+            for (int i = 0; i < branches.Count; i++)
             {
-                for (int i = 0; i < branches.Count; i++)
-                {
-                    if (!branches[i].Repository.Equals(repository))
-                        continue;
+                if (!branches[i].Repository.Equals(repository))
+                    continue;
 
-                    if (!branches[i].Id.Equals(branchId))
-                        continue;
+                if (!branches[i].Id.Equals(branchId))
+                    continue;
 
-                    return i;
-                }
-
-                return -1;
+                return i;
             }
+
+            return -1;
         }
     }
 }

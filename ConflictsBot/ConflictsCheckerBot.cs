@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using log4net;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace ConflictsBot
@@ -32,7 +31,32 @@ namespace ConflictsBot
                 mBotConfig.PlasticStatusAttrConfig.Name,
                 mBotConfig.PlasticStatusAttrConfig.ResolvedValue);
 
+            List<Branch> alreadyTracked = new List<Branch>();
+            alreadyTracked.AddRange(mResolvedBranchesStorage.GetQueuedBranches());
+            alreadyTracked.AddRange(mReadyToMergeBranchesStorage.GetQueuedBranches());
+
+            FilterAlreadyTrackedBranches(branches, alreadyTracked);
+
             mResolvedBranchesStorage.Write(branches);
+        }
+
+        void FilterAlreadyTrackedBranches(
+            List<Branch> branchesToFilter, 
+            List<Branch> alreadyTrackedBranches)
+        {
+            if (alreadyTrackedBranches.Count == 0)
+                return;
+
+            for (int i = branchesToFilter.Count - 1; i >= 0; i--)
+            {
+                if (BranchFinder.IndexOf(alreadyTrackedBranches,
+                    branchesToFilter[i].Repository, branchesToFilter[i].Id) == -1)
+                {
+                    continue;
+                }
+
+                branchesToFilter.RemoveAt(i);
+            }
         }
 
         internal void OnEventReceived(string message)
