@@ -20,9 +20,9 @@ namespace ConflictsBot
 
             string repository = Field.GetString(config,"repository");
 
-            string trunkBranch = Field.GetString(config,"trunkBranch");
-
             string branchPrefix = Field.GetString(config,"branchPrefix");
+
+            string trunkBranch = Field.GetString(config, "trunkBranch");
 
             string plasticBotUserToken = Field.GetString(config, "plasticBotUserToken");
 
@@ -89,18 +89,15 @@ namespace ConflictsBot
         {
             internal readonly string PlugName;
             internal readonly string ProjectKey;
-            internal readonly string TitleField;
             internal readonly StatusProperty StatusField;
 
             internal IssueTracker(
                 string plugName,
                 string projectKey,
-                string titleField,
                 StatusProperty statusField)
             {
                 PlugName = plugName;
                 ProjectKey = projectKey;
-                TitleField = titleField;
                 StatusField = statusField;
             }
 
@@ -113,7 +110,6 @@ namespace ConflictsBot
                 IssueTracker result = new IssueTracker(
                     plugName,
                     Field.GetString(jToken, "projectKey"),
-                    Field.GetString(jToken, "titleField"),
                     StatusProperty.BuildFromConfig(jToken["statusFieldGroup"]));
 
                 return result;

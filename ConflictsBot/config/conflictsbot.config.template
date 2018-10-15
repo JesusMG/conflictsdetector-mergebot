@@ -6,52 +6,52 @@
       "description":"The repository that the bot will monitor."
    },
    {  
-      "name":"trunkBranch",
-      "displayName":"Trunk branch",
-      "type":"string",
-      "description":"Trunk Bot will merge all branches into this one."
-   },
-   {  
       "name":"branchPrefix",
       "displayName":"Branch prefix",
       "type":"string",
-      "description":"The prefix of the branches to be merged. Example: 'task' will take 'task1234'. This is the same prefix that you use to link branches to the issue tracker."
+      "description":"The prefix of the branches to check if they have conflicts with trunk branch. Example: 'PRJ-' prefix will consider branches named like 'PRJ-1234'. This is the same prefix that you use to link branches to the issue tracker (if any)."
+   },
+   {  
+      "name":"trunkBranch",
+      "displayName":"Trunk branch",
+      "type":"string",
+      "description":"ConflicsBot will check if a tracked branch has manual conflicts with this one."
    },
    {  
       "name":"plasticBotUserToken",
       "displayName":"Bot User",
       "type":"user_api_key",
-      "description":"The API Key of the Plastic SCM user that the mergebot will use to checkin and perform API calls."
+      "description":"The API Key of the Plastic SCM user the ConflicsBot will use to run the try-merge operation and other required queries."
    },
    {  
       "name":"plasticStatusAttributeGroup",
-      "displayName":"Branch status field",
+      "displayName":"Branch 'status' attribute",
       "type":"group",
-      "description":"Task status field name and values.",
+      "description":"Configuration of 'status' attribute and its possible values.",
       "items":[  
          {  
             "name":"statusAttribute",
-            "displayName":"Task status field name",
+            "displayName":"Name of 'status' attribute",
             "type":"string",
-            "description":"The status field of the task to allow the branch to be merged (e.g. 'status' in Jira)."
+            "description":"The attribute name that defines the 'status' of a branch."
          },
          {  
             "name":"resolvedValue",
-            "displayName":"Resolved status value",
+            "displayName":"'Resolved' status value",
             "type":"string",
-            "description":"The status value to query to check if a task is already resolved before trying to merge it (case-sensitive)."
+            "description":"The status value that defines a branch is ready to be processed by ConflictsBot and check whether the branch has manual merge conflicts."
          },
          {  
             "name":"failedValue",
             "displayName":"Failed status value",
             "type":"string",
-            "description":"The status value to set when a task fails on any stage (case-sensitive)."
+            "description":"The status value to set when a task fails if the branch has manual merge conflicts."
          },
          {  
             "name":"mergedValue",
             "displayName":"Merged status value",
             "type":"string",
-            "description":"The status value to set when a task is sucessfully merged (case-sensitive)."
+            "description":"The status value that defines a branch is integrated (Once a branch is integrated, ConflicsBot won't process that branch anymore)."
          }
       ]
    },
@@ -71,13 +71,7 @@
             "name":"projectKey",
             "displayName":"Project key",
             "type":"string",
-            "description":"Key of the project whose issues will be related to the Plastic branches."
-         },
-         {  
-            "name":"titleField",
-            "displayName":"Task title field",
-            "type":"string",
-            "description":"The title field of the task in the issue tracker (e.g. 'summary' in Jira)."
+            "description":"Key of the project whose issues will be related to the Plastic branches (if any)."
          },
          {  
             "name":"statusFieldGroup",
@@ -89,25 +83,19 @@
                   "name":"statusAttribute",
                   "displayName":"Task status field name",
                   "type":"string",
-                  "description":"The status field of the task to allow the branch to be merged (e.g. 'status' in Jira)."
+                  "description":"The issue tracker field that defines the 'status' of related task branch. (e.g. 'status' in Jira)."
                },
                {  
                   "name":"resolvedValue",
                   "displayName":"Resolved status value",
                   "type":"string",
-                  "description":"The status value to query to check if a task is already resolved before trying to merge it (case-sensitive)."
+                  "description":"The value of the 'status' field in the issue tracker that defines whether a task branch is ready to be processed by ConflictsBot (case-sensitive)."
                },
                {  
                   "name":"failedValue",
                   "displayName":"Failed status value",
                   "type":"string",
-                  "description":"The status value to set when a task fails on any stage (case-sensitive)."
-               },
-               {  
-                  "name":"mergedValue",
-                  "displayName":"Merged status value",
-                  "type":"string",
-                  "description":"The status value to set when a task is sucessfully merged (case-sensitive)."
+                  "description":"The value of the 'status' field in the issue tracker to set when a task fails if the task branch has manual merge conflicts (case-sensitive)."
                }
             ]
          }
