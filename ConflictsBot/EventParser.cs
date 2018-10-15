@@ -5,19 +5,28 @@ namespace ConflictsBot
 {
     internal class BranchAttributeChangeEvent
     {
+        [JsonProperty("repository")]
         public string Repository { get; set; }
+        [JsonProperty("branchId")]
         public string BranchId { get; set; }
+        [JsonProperty("branchFullName")]
         public string BranchFullName { get; set; }
+        [JsonProperty("branchOwner")]
         public string BranchOwner { get; set; }
+        [JsonProperty("branchComment")]
         public string BranchComment { get; set; }
+        [JsonProperty("attributeName")]
         public string AttributeName { get; set; }
+        [JsonProperty("attributeValue")]
         public string AttributeValue { get; set; }
     }
 
     internal class NewChangesetsEvent
     {
+        [JsonProperty("repository")]
         public string Repository { get; set; }
 
+        [JsonProperty("branch")]
         public string BranchFullName { get; set; }
     }
 
