@@ -142,7 +142,7 @@ namespace ConflictsBot
             if (!e.Repository.Equals(mBotConfig.Repository, StringComparison.InvariantCultureIgnoreCase))
                 return;
 
-            if (!e.BranchFullName.Equals(mBotConfig.TrunkBranch))
+            if (!IsTrackedTrunkBranch(e.BranchFullName, mBotConfig.TrunkBranch))
                 return;
             
             lock (mSyncLock)
@@ -153,6 +153,12 @@ namespace ConflictsBot
                         mReadyToMergeBranchesStorage.DequeueBranch());
                 }                
             }
+        }
+
+        bool IsTrackedTrunkBranch(string branchFullName, string trunkBranch)
+        {
+            return Branch.NormalizeFullName(branchFullName).Equals(
+                   Branch.NormalizeFullName(trunkBranch));
         }
 
         internal void ProcessBranches(object state)
