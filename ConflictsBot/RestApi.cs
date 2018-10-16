@@ -19,10 +19,14 @@ namespace ConflictsBot
             string actionDescription,
             string[] fields);
 
+        void UpdateBranchAttribute(string repository, string branch, string attrName, string attrValue);
+
         RestApi.MergeToResponse MergeBranchToShelve(
 		    string repository, 
 			string fullName, 
 			string trunkBranch);
+
+        string UpdateIssueTrackerField(string plugName, string projectKey, string taskNumber, string fieldName, string fieldValue);
 
         bool IsIssueTrackerConnected(string plugName);
 
@@ -84,6 +88,54 @@ namespace ConflictsBot
                 return flag;
 
             return false;
+        }
+
+        public string UpdateIssueTrackerField(
+            string plugName, 
+            string projectKey, 
+            string taskNumber, 
+            string fieldName, 
+            string fieldValue)
+        {
+            SetIssueFieldRequest request = new SetIssueFieldRequest()
+            {
+                NewValue = fieldValue
+            };
+
+            Uri endpoint = ApiUris.GetFullUri(
+                mBaseUri, 
+                ApiEndpoints.Issues.SetIssueField,
+                plugName, 
+                projectKey, 
+                taskNumber, 
+                fieldName);
+
+            string actionDescription = string.Format(
+                "set field '{0}' of issue {1}-{2} in {3} to value '{4}'",
+                fieldName, projectKey, taskNumber, plugName, request.NewValue);
+
+            return Internal.MakeApiRequest<SetIssueFieldRequest, SingleResponse>(
+                endpoint, HttpMethod.Put, request, actionDescription, mPlasticBotUserToken).Value;
+        }
+
+        public void UpdateBranchAttribute(string repository, string branchFullName, string attrName, string attrValue)
+        {
+            string actionDescription = string.Format(
+                "update attribute {0}={1} of branch {2}" , attrName, attrValue, branchFullName);
+
+            ChangeAttributeRequest request = new ChangeAttributeRequest()
+            {
+                TargetType = ChangeAttributeRequest.AttributeTargetType.Branch,
+                TargetName = branchFullName,
+                Value = attrValue
+            };
+
+            Uri endpoint = ApiUris.GetFullUri(
+                mBaseUri, ApiEndpoints.ChangeAttribute,
+                repository, attrName);
+
+            Internal.MakeApiRequest<ChangeAttributeRequest>(
+                endpoint, HttpMethod.Put, request, actionDescription, mPlasticBotUserToken);
         }
 
         public JObject GetUserProfile(string user)
@@ -462,22 +514,21 @@ namespace ConflictsBot
 
         public class MergeToResponse
         {
-        [JsonConverter(typeof(StringEnumConverter))]
-           public MergeToResultStatus Status { get; set; }
-           public string Message { get; set; }
-           public int ChangesetNumber { get; set; }
+            [JsonConverter(typeof(StringEnumConverter))]
+            public MergeToResultStatus Status { get; set; }
+            public string Message { get; set; }
+            public int ChangesetNumber { get; set; }
     
-
-           public enum MergeToResultStatus : byte
-           {
-               OK = 0,
-               AncestorNotFound = 1,
-               MergeNotNeeded = 2,
-               Conflicts = 3,
-               DestinationChanges = 4,
-               Error = 5,
-               MultipleHeads = 6
-           }
+            public enum MergeToResultStatus : byte
+            {
+                OK = 0,
+                AncestorNotFound = 1,
+                MergeNotNeeded = 2,
+                Conflicts = 3,
+                DestinationChanges = 4,
+                Error = 5,
+                MultipleHeads = 6
+            }
        }
 
        public class MergeToRequest
@@ -500,10 +551,32 @@ namespace ConflictsBot
             }
         }
 
+        public class ChangeAttributeRequest
+        {
+            public string TargetName { get; set; }
+
+            [JsonConverter(typeof(StringEnumConverter))]
+            public AttributeTargetType TargetType { get; set; }
+
+            public string Value { get; set; }
+
+            public enum AttributeTargetType : byte
+            {
+                Branch = 0,
+                Label = 1,
+                Changeset = 2
+            }
+        }
+
         class NotifyMessageRequest
         {
             public string Message { get; set; }
             public List<string> Recipients { get; set; }
+        }
+
+        class SetIssueFieldRequest
+        {
+            public string NewValue { get; set; }
         }
 
         static readonly ILog mLog = LogManager.GetLogger(typeof(RestApi));
