@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -24,6 +25,10 @@ namespace ConflictsBot
 			string trunkBranch);
 
         bool IsIssueTrackerConnected(string plugName);
+
+		void Notify(string plugName, string message, List<string> recipients);
+
+        JObject GetUserProfile(string user);
 
         string GetIssueTrackerField(
 			string plugName, 
@@ -79,6 +84,37 @@ namespace ConflictsBot
                 return flag;
 
             return false;
+        }
+
+        public JObject GetUserProfile(string user)
+        {
+            string actionDescription = string.Format("get profile of user '{0}'", user);
+
+            Uri endpoint = ApiUris.GetFullUri(
+                    mBaseUri, ApiEndpoints.Users.GetUserProfile, user);
+
+            return Internal.MakeApiRequest<JObject>(
+                endpoint, HttpMethod.Get, actionDescription, mPlasticBotUserToken);
+        }
+
+        public void Notify(string notifierPlugName, string message, List<string> recipients)
+        {
+            if (recipients == null || recipients.Count == 0)
+                return;
+
+            string actionDescription = string.Format("nofify message to '{0}'", string.Join(" ", recipients));
+
+            NotifyMessageRequest request = new NotifyMessageRequest()
+            {
+                Message = message,
+                Recipients = recipients
+            };
+
+            Uri endpoint = ApiUris.GetFullUri(
+                    mBaseUri, ApiEndpoints.Notify.NotifyMessage, notifierPlugName);
+
+            Internal.MakeApiRequest<NotifyMessageRequest>(
+                endpoint, HttpMethod.Post, request, actionDescription, mPlasticBotUserToken);
         }
 
         public string GetIssueTrackerField(
@@ -248,6 +284,32 @@ namespace ConflictsBot
                 }
             }
 
+            internal static void MakeApiRequest<TReq>(
+                Uri endpoint, HttpMethod httpMethod, TReq body, string actionDescription, string apiKey)
+            {
+                try
+                {
+                    HttpWebRequest request = CreateWebRequest<TReq>(
+                        endpoint, httpMethod, body, apiKey);
+
+                    GetResponse(request);
+                }
+                catch (WebException ex)
+                {
+                    throw WebServiceException.AdaptException(ex, actionDescription, endpoint);
+                }
+                catch (Exception ex)
+                {
+                    ExceptionLogger.LogException(
+                        actionDescription, 
+                        ex.Message, 
+                        ex.StackTrace, 
+                        endpoint,
+                        HttpStatusCode.OK);
+                    throw;
+                }
+            }
+
             static HttpWebRequest CreateWebRequest(
                 Uri endpoint, HttpMethod httpMethod, string apiKey)
             {
@@ -288,6 +350,11 @@ namespace ConflictsBot
                 {
                     return JsonConvert.DeserializeObject<TRes>(reader.ReadToEnd());
                 }
+            }
+
+            static void GetResponse(WebRequest request)
+            {
+                using (WebResponse response = request.GetResponse()){}
             }
 
             static void SetApiKeyAuth(HttpWebRequest request, string apiKey)
@@ -415,7 +482,7 @@ namespace ConflictsBot
 
        public class MergeToRequest
         {
-        [JsonConverter(typeof(StringEnumConverter))]
+            [JsonConverter(typeof(StringEnumConverter))]
             public MergeToSourceType SourceType { get; set; }
             public string Source { get; set; }
             public string Destination { get; set; }
@@ -431,6 +498,12 @@ namespace ConflictsBot
                 Label = 2,
                 Changeset = 3
             }
+        }
+
+        class NotifyMessageRequest
+        {
+            public string Message { get; set; }
+            public List<string> Recipients { get; set; }
         }
 
         static readonly ILog mLog = LogManager.GetLogger(typeof(RestApi));

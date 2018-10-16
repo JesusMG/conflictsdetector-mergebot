@@ -243,7 +243,7 @@ namespace ConflictsBot
                     continue;
                 }
 
-                //TODO: Notify, and reopen
+                //TODO: Notify, and reopen and change attr
 
                 mLog.InfoFormat("Branch {0} has manual conflicts.", branch.FullName);
 
