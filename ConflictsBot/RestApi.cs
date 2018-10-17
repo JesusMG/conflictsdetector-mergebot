@@ -26,13 +26,7 @@ namespace ConflictsBot
 			string fullName, 
 			string trunkBranch);
 
-        string UpdateIssueTrackerField(string plugName, string projectKey, string taskNumber, string fieldName, string fieldValue);
-
         bool IsIssueTrackerConnected(string plugName);
-
-		void Notify(string plugName, string message, List<string> recipients);
-
-        JObject GetUserProfile(string user);
 
         string GetIssueTrackerField(
 			string plugName, 
@@ -40,10 +34,20 @@ namespace ConflictsBot
 			string taskNumber, 
 			string name);
 
+        string UpdateIssueTrackerField(string plugName, string projectKey, string taskNumber, string fieldName, string fieldValue);
+
+		void Notify(string plugName, string message, List<string> recipients);
+
+        void SendMergeReport(string mergeBotName, MergeReport report);
+
+        JObject GetUserProfile(string user);
+
         void DeleteShelve(
             IRestApi restApi, 
             string repository, 
             int shelveId);
+        bool GetBranchIdData(string repository, string branchFullName, out string repId, out int branchId);
+
     }
 
     public class RestApi : IRestApi
@@ -169,6 +173,22 @@ namespace ConflictsBot
                 endpoint, HttpMethod.Post, request, actionDescription, mPlasticBotUserToken);
         }
 
+        public void SendMergeReport(string mergeBotName, MergeReport report)
+        {
+            Uri endpoint = ApiUris.GetFullUri(
+                mBaseUri, 
+                ApiEndpoints.MergeReports.ReportMerge,
+                mergeBotName);
+
+            string actionDescription = string.Format(
+                "upload merge report of br:{0} (repo ID: {1})",
+                report.BranchId,
+                report.RepositoryId);
+
+            Internal.MakeApiRequest<MergeReport>(
+                endpoint, HttpMethod.Put, report, actionDescription, mPlasticBotUserToken);
+        }
+
         public string GetIssueTrackerField(
             string plugName, 
             string projectKey, 
@@ -232,6 +252,32 @@ namespace ConflictsBot
 
             Internal.MakeApiRequest<SingleResponse>(
                 endpoint, HttpMethod.Delete, actionDescription, mPlasticBotUserToken);
+        }
+
+        public bool GetBranchIdData(string repository, string branchFullName, out string repId, out int branchId)
+        {
+            repId = null;
+            branchId = -1;
+
+            if (branchFullName.StartsWith("/"))
+                branchFullName = branchFullName.Substring(1);
+
+            Uri endpoint = ApiUris.GetFullUri(
+                mBaseUri, ApiEndpoints.GetBranch, repository, branchFullName);
+
+            string actionDescription = string.Format(
+                "get info of branch br:{0}@{1}", branchFullName, repository);
+
+            BranchResponse response = Internal.MakeApiRequest<BranchResponse>(
+                endpoint, HttpMethod.Get, actionDescription, mPlasticBotUserToken);
+
+            if (response == null)
+                return false;
+            
+            repId = response.RepositoryId;
+            branchId = response.Id;
+
+            return true;
         }
 
         readonly Uri mBaseUri;
@@ -577,6 +623,18 @@ namespace ConflictsBot
         class SetIssueFieldRequest
         {
             public string NewValue { get; set; }
+        }
+
+        class BranchResponse
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string RepositoryId { get; set; }
+            public int HeadChangeset { get; set; }
+            public DateTime Date { get; set; }
+            public string Owner { get; set; }
+            public string Comment { get; set; }
+            public string Type { get; set; }
         }
 
         static readonly ILog mLog = LogManager.GetLogger(typeof(RestApi));

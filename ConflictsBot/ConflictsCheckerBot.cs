@@ -228,6 +228,15 @@ namespace ConflictsBot
                 if (result == null) //branch already merged!
                     continue;
 
+                
+                MergeReporter.NotifyMerge(
+                    mRestApi, 
+                    mBotName, 
+                    branch.Repository, 
+                    branch.FullName, 
+                    result.HasManualConflicts, 
+                    result.Message);
+
                 if (!result.HasManualConflicts)
                 {
                     mLog.InfoFormat(
@@ -244,6 +253,7 @@ namespace ConflictsBot
                 }
 
                 //TODO: Notify, and reopen and change attr
+                
 
                 mLog.InfoFormat("Branch {0} has manual conflicts.", branch.FullName);
 
