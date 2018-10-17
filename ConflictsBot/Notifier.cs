@@ -4,7 +4,7 @@ namespace ConflictsBot
 {
     internal static class Notifier
     {
-        static void Notify(
+        public static void Notify(
             IRestApi restApi,
             string owner,
             string message,

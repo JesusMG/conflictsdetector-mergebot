@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+
 using log4net;
+
 using Newtonsoft.Json.Linq;
 
 namespace ConflictsBot
@@ -205,12 +207,22 @@ namespace ConflictsBot
                 mLog.InfoFormat(
                     "Checking if branch {0} has merge conflicts with {1} branch...",
                     branch.FullName, mBotConfig.TrunkBranch);
+                
+                string taskNumber = GetTaskNumber(
+                    Branch.GetShortName(branch.FullName), mBotConfig.BranchPrefix);
+
+                if (string.IsNullOrEmpty(taskNumber))
+                {
+                    mLog.WarnFormat("Unable to calculate the task number of branch {0}. Tracked branch prefix:{1}",
+                        branch.FullName, mBotConfig.BranchPrefix);
+
+                    continue;
+                }
 
                 if (!HasToTriggerTryMerge(
                     mRestApi,
-                    mBotConfig.IssueTrackerConfig,
-                    Branch.GetShortName(branch.FullName),
-                    mBotConfig.BranchPrefix))
+                    taskNumber,
+                    mBotConfig.IssueTrackerConfig))
                 {
                     mLog.InfoFormat("Branch {0} is not ready to trigger a try-merge. It will be queued again.", branch.FullName);
 
@@ -220,14 +232,11 @@ namespace ConflictsBot
                     }
                 }
 
-                //TODO: Build MErge report and fill.
-
                 BranchMerger.Result result = BranchMerger.Try(
                     mRestApi, branch.Repository, branch.FullName, mBotConfig.TrunkBranch);
 
                 if (result == null) //branch already merged!
                     continue;
-
                 
                 MergeReporter.NotifyMerge(
                     mRestApi, 
@@ -236,6 +245,8 @@ namespace ConflictsBot
                     branch.FullName, 
                     result.HasManualConflicts, 
                     result.Message);
+                
+                string notifyMessage = string.Empty;
 
                 if (!result.HasManualConflicts)
                 {
@@ -243,7 +254,11 @@ namespace ConflictsBot
                         "Branch {0} has no manual conflicts with {1} at this repository state.",
                         branch.FullName, mBotConfig.TrunkBranch);
 
-                    //TODO: NOTIFY
+                    notifyMessage = string.Format(
+                        "Branch {0} has no manual conflicts with branch {1} and is able to be merged so far.",
+                        branch.FullName, mBotConfig.TrunkBranch);
+
+                    Notifier.Notify(mRestApi, branch.Owner, notifyMessage, mBotConfig.NotifierConfig);
 
                     lock (mSyncLock)
                     {
@@ -252,25 +267,56 @@ namespace ConflictsBot
                     continue;
                 }
 
-                //TODO: Notify, and reopen and change attr
+                mLog.InfoFormat(
+                    "Branch {0} has manual conflicts with branch {1}.", 
+                    branch.FullName, mBotConfig.TrunkBranch);
                 
+                string extraIssueTrackerMessage = mBotConfig.IssueTrackerConfig == null ?
+                    string.Empty :
+                    string.Format(
+                        "and the {0} plug's issue tracker field of {1} {2} to {3}",
+                        mBotConfig.IssueTrackerConfig.PlugName,
+                        mBotConfig.IssueTrackerConfig.ProjectKey,
+                        taskNumber,
+                        mBotConfig.IssueTrackerConfig.StatusField.ResolvedValue);
 
-                mLog.InfoFormat("Branch {0} has manual conflicts.", branch.FullName);
+                notifyMessage = string.Format(
+                    "Branch {0} has manual conflicts with branch {1} and cannot be merged. " + 
+                    Environment.NewLine + Environment.NewLine +
+                    "Please run a merge from branch {1} to branch {0} in your plastic workspace " +
+                    "and resolve these manual conflicts. " + 
+                    Environment.NewLine +
+                    "Then, enqueue the branch {0} again by setting the {2} attribute of the {0} branch to {3} {4}", 
+                    branch.FullName, 
+                    mBotConfig.TrunkBranch, 
+                    mBotConfig.PlasticStatusAttrConfig.Name, 
+                    mBotConfig.PlasticStatusAttrConfig.ResolvedValue,
+                    extraIssueTrackerMessage);
 
-                Thread.Sleep(5000);
+                Notifier.Notify(mRestApi, branch.Owner, notifyMessage, mBotConfig.NotifierConfig);
+
+                StatusUpdater.UpdateBranchAttribute(
+                    mRestApi, 
+                    branch.Repository, 
+                    branch.FullName, 
+                    mBotConfig.PlasticStatusAttrConfig.Name, 
+                    mBotConfig.PlasticStatusAttrConfig.FailedValue);
+
+                StatusUpdater.UpdateIssueTrackerField(
+                    mRestApi,
+                    mBotConfig.IssueTrackerConfig.PlugName,
+                    mBotConfig.IssueTrackerConfig.ProjectKey,
+                    taskNumber,
+                    mBotConfig.IssueTrackerConfig.StatusField.Name,
+                    mBotConfig.IssueTrackerConfig.StatusField.FailedValue);
             }
         }
 
         static bool HasToTriggerTryMerge(
             IRestApi restApi,
-            BotConfiguration.IssueTracker issueTrackerConfig,
-            string branchShortName,
-            string branchPrefixToTrack)
+            string taskNumber,
+            BotConfiguration.IssueTracker issueTrackerConfig)
         {
-            string taskNumber = GetTaskNumber(branchShortName, branchPrefixToTrack);
-            if (taskNumber == null)
-                return false;
-
             if (issueTrackerConfig == null) //no issue tracker config -> just check the branch status attr
                 return true;
 
