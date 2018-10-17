@@ -150,11 +150,17 @@ namespace ConflictsBot
             internal readonly string PlugName;
             internal readonly string UserProfileField;
             internal readonly string[] FixedRecipients;
+            internal readonly bool HasToNofifyOnSuccessfulTryMerge;
 
-            internal Notifier(string plugName, string userProfileField, string[] fixedRecipients)
+            internal Notifier(
+                string plugName, 
+                string userProfileField, 
+                bool bHasToNotifyOnSuccessful, 
+                string[] fixedRecipients)
             {
                 PlugName = plugName;
                 UserProfileField = userProfileField;
+                HasToNofifyOnSuccessfulTryMerge = bHasToNotifyOnSuccessful;
                 FixedRecipients = fixedRecipients;
             }
 
@@ -179,6 +185,7 @@ namespace ConflictsBot
                 return new Notifier(
                     Field.GetString(jToken, "plugName"),
                     Field.GetString(jToken, "userProfileFieldName"),
+                    Field.GetBool(jToken, "notifyOnSuccessfulTryMerge", true),
                     normalizedRecipientsArray);
             }
         }
@@ -197,6 +204,47 @@ namespace ConflictsBot
                 LogConfigParam(section.Path, fieldName, fieldValue);
 
                 return fieldValue;
+            }
+
+            internal static bool GetBool(JToken section, string fieldName, bool defaultValue)
+            {
+                if (section == null || section[fieldName] == null)
+                {
+                    LogUndefinedParam(section, fieldName, defaultValue.ToString());
+                    return defaultValue;
+                }
+
+                JToken fieldToken = section[fieldName];
+                bool fieldValue = false;
+
+                if (fieldToken.Type == JTokenType.Boolean)
+                {
+                    fieldValue = fieldToken.Value<bool>();
+                    LogConfigParam(section.Path, fieldName, fieldValue.ToString());
+                    return fieldValue;
+                }
+
+                if (fieldToken.Type != JTokenType.String)
+                    throw new NotSupportedException(
+                        string.Format("Value {0} is not supported", fieldToken.ToString()));
+
+                string valueStr = fieldToken.Value<string>();
+                if ("yes".Equals(valueStr, StringComparison.OrdinalIgnoreCase))
+                {
+                    fieldValue = true;
+                    LogConfigParam(section.Path, fieldName, fieldValue.ToString());
+                    return fieldValue;
+                }
+
+                if ("no".Equals(valueStr, StringComparison.OrdinalIgnoreCase))
+                {
+                    fieldValue = false;
+                    LogConfigParam(section.Path, fieldName, fieldValue.ToString());
+                    return false;
+                }
+
+                throw new NotSupportedException(
+                    string.Format("Value {0} is not supported", valueStr));
             }
 
             static void LogConfigParam(string sectionPath, string fieldName, string fieldValue)

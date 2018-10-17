@@ -113,6 +113,12 @@
             "type":"notifier_plug",
             "description":"The name of the 'notifier plug' to use to send notifications to the team."
          },
+         {
+            "name":"notifyOnSuccessfulTryMerge",
+            "displayName":"Notify also if no conflicts were detected",
+            "type":"bool",
+            "description":"Send a notification even if no conflicts were detected when ConflictsBot checks a branch."
+         },
          {  
             "name":"userProfileFieldName",
             "displayName":"User profile field",
