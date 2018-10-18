@@ -254,14 +254,11 @@ namespace ConflictsBot
                         "Branch {0} has no manual conflicts with {1} at this repository state.",
                         branch.FullName, mBotConfig.TrunkBranch);
 
-                    if (mBotConfig.NotifierConfig.HasToNofifyOnSuccessfulTryMerge)
-                    {
-                        notifyMessage = string.Format(
-                            "Branch {0} has no manual conflicts with branch {1} and is able to be merged so far.",
-                            branch.FullName, mBotConfig.TrunkBranch);
-
-                        Notifier.Notify(mRestApi, branch.Owner, notifyMessage, mBotConfig.NotifierConfig);
-                    }
+                    notifyMessage = string.Format(
+                        "Branch {0} has no manual conflicts with branch {1} and is able to be merged so far.",
+                        branch.FullName, mBotConfig.TrunkBranch);
+                    
+                    Notifier.Notify(mRestApi, branch.Owner, notifyMessage, mBotConfig.NotifierConfig, true);
 
                     lock (mSyncLock)
                     {
@@ -296,7 +293,7 @@ namespace ConflictsBot
                     mBotConfig.PlasticStatusAttrConfig.ResolvedValue,
                     extraIssueTrackerMessage);
 
-                Notifier.Notify(mRestApi, branch.Owner, notifyMessage, mBotConfig.NotifierConfig);
+                Notifier.Notify(mRestApi, branch.Owner, notifyMessage, mBotConfig.NotifierConfig, false);
 
                 StatusUpdater.UpdateBranchAttribute(
                     mRestApi, 
@@ -305,13 +302,16 @@ namespace ConflictsBot
                     mBotConfig.PlasticStatusAttrConfig.Name, 
                     mBotConfig.PlasticStatusAttrConfig.FailedValue);
 
-                StatusUpdater.UpdateIssueTrackerField(
-                    mRestApi,
-                    mBotConfig.IssueTrackerConfig.PlugName,
-                    mBotConfig.IssueTrackerConfig.ProjectKey,
-                    taskNumber,
-                    mBotConfig.IssueTrackerConfig.StatusField.Name,
-                    mBotConfig.IssueTrackerConfig.StatusField.FailedValue);
+                if (mBotConfig.IssueTrackerConfig != null)
+                {
+                    StatusUpdater.UpdateIssueTrackerField(
+                        mRestApi,
+                        mBotConfig.IssueTrackerConfig.PlugName,
+                        mBotConfig.IssueTrackerConfig.ProjectKey,
+                        taskNumber,
+                        mBotConfig.IssueTrackerConfig.StatusField.Name,
+                        mBotConfig.IssueTrackerConfig.StatusField.FailedValue);
+                }
             }
         }
 
