@@ -1,0 +1,1 @@
+dotnet publish -c Release -o c:\wkspaces\personal\ConflictsBot\ConflictsBot\bin_win -r win-x64 
