@@ -17,13 +17,20 @@ namespace ConflictsBot
             if (bIsSuccessfulMerge && !notificationConfig.HasToNofifyOnSuccessfulTryMerge)
                 return;
 
+            string messageWithIntro = string.Format(
+                "{0}{1}{2}", 
+                string.IsNullOrEmpty(notificationConfig.IntroMessage) ?
+                    string.Empty : notificationConfig.IntroMessage,
+                System.Environment.NewLine, 
+                message);
+
             List<string> recipients = new List<string>();
             recipients.Add(owner);
             recipients.AddRange(notificationConfig.FixedRecipients);
 
             restApi.Notify(
                 notificationConfig.PlugName,
-                message,
+                messageWithIntro,
                 Profile.ResolveUserField(
                     restApi, recipients, notificationConfig.UserProfileField));
         }

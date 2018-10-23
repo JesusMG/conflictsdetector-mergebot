@@ -113,6 +113,12 @@
             "type":"notifier_plug",
             "description":"The name of the 'notifier plug' to use to send notifications to the team."
          },
+         {  
+            "name":"introductionMessage",
+            "displayName":"Custom message to prepend to the report:",
+            "type":"string",
+            "description":"A custom message to show before writing the result of the manual conflicts checks."
+         },
          {
             "name":"notifyOnSuccessfulTryMerge",
             "displayName":"Notify also if no conflicts were detected",

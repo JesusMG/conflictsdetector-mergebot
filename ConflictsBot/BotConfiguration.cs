@@ -148,17 +148,20 @@ namespace ConflictsBot
         internal class Notifier
         {
             internal readonly string PlugName;
+            internal readonly string IntroMessage;
             internal readonly string UserProfileField;
             internal readonly string[] FixedRecipients;
             internal readonly bool HasToNofifyOnSuccessfulTryMerge;
 
             internal Notifier(
-                string plugName, 
+                string plugName,
+                string introMessage,
                 string userProfileField, 
                 bool bHasToNotifyOnSuccessful, 
                 string[] fixedRecipients)
             {
                 PlugName = plugName;
+                IntroMessage = introMessage;
                 UserProfileField = userProfileField;
                 HasToNofifyOnSuccessfulTryMerge = bHasToNotifyOnSuccessful;
                 FixedRecipients = fixedRecipients;
@@ -184,6 +187,7 @@ namespace ConflictsBot
                 
                 return new Notifier(
                     Field.GetString(jToken, "plugName"),
+                    Field.GetString(jToken, "introductionMessage"),
                     Field.GetString(jToken, "userProfileFieldName"),
                     Field.GetBool(jToken, "notifyOnSuccessfulTryMerge", true),
                     normalizedRecipientsArray);
