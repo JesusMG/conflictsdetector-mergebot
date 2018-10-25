@@ -194,11 +194,10 @@ namespace ConflictsBot
                 Branch branch;
                 lock (mSyncLock)
                 {
+                    Monitor.Wait(mSyncLock, 5000);
+
                     if (!mResolvedBranchesStorage.HasQueuedBranches())
-                    {
-                        Monitor.Wait(mSyncLock, 10000);
                         continue;
-                    }
 
                     branch = mResolvedBranchesStorage.DequeueBranch();
                     branch.FullName = FindQueries.GetBranchName(mRestApi, branch.Repository, branch.Id);
@@ -230,6 +229,8 @@ namespace ConflictsBot
                     {
                         mResolvedBranchesStorage.EnqueueBranch(branch);
                     }
+
+                    continue;
                 }
 
                 BranchMerger.Result result = BranchMerger.Try(

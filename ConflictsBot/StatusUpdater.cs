@@ -1,3 +1,5 @@
+using log4net;
+
 namespace ConflictsBot
 {
     internal static class StatusUpdater
@@ -9,7 +11,14 @@ namespace ConflictsBot
             string attrName,
             string attrValue)
         {
-            restApi.UpdateBranchAttribute(repository, branch, attrName, attrValue);
+            try
+            {
+                restApi.UpdateBranchAttribute(repository, branch, attrName, attrValue);
+            }
+            catch (System.Exception e)
+            {
+                mLog.ErrorFormat("Error updating branch attribute:{0}", e.Message);
+            }
         }
 
         internal static void UpdateIssueTrackerField(
@@ -20,8 +29,17 @@ namespace ConflictsBot
             string fieldName, 
             string fieldValue)
         {
-            restApi.UpdateIssueTrackerField(plugName, projectKey, taskNumber, fieldName, fieldValue);
+            try
+            {
+                restApi.UpdateIssueTrackerField(plugName, projectKey, taskNumber, fieldName, fieldValue);
+            }
+            catch (System.Exception e)
+            {
+                mLog.ErrorFormat("Error updating issue tracker field:{0}", e.Message);
+            }
         }
+
+        static readonly ILog mLog = LogManager.GetLogger(typeof(StatusUpdater));
     }
 
 }

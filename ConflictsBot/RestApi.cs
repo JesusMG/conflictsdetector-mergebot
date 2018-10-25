@@ -34,7 +34,7 @@ namespace ConflictsBot
 			string taskNumber, 
 			string name);
 
-        string UpdateIssueTrackerField(string plugName, string projectKey, string taskNumber, string fieldName, string fieldValue);
+        void UpdateIssueTrackerField(string plugName, string projectKey, string taskNumber, string fieldName, string fieldValue);
 
 		void Notify(string plugName, string message, List<string> recipients);
 
@@ -94,7 +94,7 @@ namespace ConflictsBot
             return false;
         }
 
-        public string UpdateIssueTrackerField(
+        public void UpdateIssueTrackerField(
             string plugName, 
             string projectKey, 
             string taskNumber, 
@@ -118,8 +118,8 @@ namespace ConflictsBot
                 "set field '{0}' of issue {1}-{2} in {3} to value '{4}'",
                 fieldName, projectKey, taskNumber, plugName, request.NewValue);
 
-            return Internal.MakeApiRequest<SetIssueFieldRequest, SingleResponse>(
-                endpoint, HttpMethod.Put, request, actionDescription, mPlasticBotUserToken).Value;
+            Internal.MakeApiRequest<SetIssueFieldRequest, SingleResponse>(
+                endpoint, HttpMethod.Put, request, actionDescription, mPlasticBotUserToken);
         }
 
         public void UpdateBranchAttribute(string repository, string branchFullName, string attrName, string attrValue)
