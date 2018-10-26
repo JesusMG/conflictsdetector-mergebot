@@ -149,6 +149,7 @@ namespace ConflictsBot
         {
             internal readonly string PlugName;
             internal readonly string IntroMessage;
+            internal readonly string TrailingMessage;
             internal readonly string UserProfileField;
             internal readonly string[] FixedRecipients;
             internal readonly bool HasToNofifyOnSuccessfulTryMerge;
@@ -156,12 +157,14 @@ namespace ConflictsBot
             internal Notifier(
                 string plugName,
                 string introMessage,
+                string trailingMessage,
                 string userProfileField, 
                 bool bHasToNotifyOnSuccessful, 
                 string[] fixedRecipients)
             {
                 PlugName = plugName;
                 IntroMessage = introMessage;
+                TrailingMessage = trailingMessage;
                 UserProfileField = userProfileField;
                 HasToNofifyOnSuccessfulTryMerge = bHasToNotifyOnSuccessful;
                 FixedRecipients = fixedRecipients;
@@ -188,6 +191,7 @@ namespace ConflictsBot
                 return new Notifier(
                     Field.GetString(jToken, "plugName"),
                     Field.GetString(jToken, "introductionMessage"),
+                    Field.GetString(jToken, "trailingMessage"),
                     Field.GetString(jToken, "userProfileFieldName"),
                     Field.GetBool(jToken, "notifyOnSuccessfulTryMerge", true),
                     normalizedRecipientsArray);

@@ -119,6 +119,12 @@
             "type":"string",
             "description":"A custom message to show before writing the result of the manual conflicts checks."
          },
+         {  
+            "name":"trailingMessage",
+            "displayName":"Custom message to append at the end of the report on conflicts:",
+            "type":"string",
+            "description":"A custom message to show when the manual conflicts were detected."
+         },
          {
             "name":"notifyOnSuccessfulTryMerge",
             "displayName":"Notify also if no conflicts were detected",
