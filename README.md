@@ -11,20 +11,20 @@ To be filled
 
 ## A full configuration example
 This section breaks down the configuration of the Plastic SCM DevOps feature for a repo with a Trunk Builder mergebot (TrunkBot) and a ConflitsDetector mergebot (ConflictsBot) working together.
-The initial step is to have a plastic repo filled with the project code I want to track. In this example,  my repo name is “pnunit”, and my plastic server is configured with User/Password authentication mode. A special “bot” user was created for mergebots described above.
+The initial step is to have a plastic repo filled with the project code I want to track. In this example,  my repo name is **pnunit**, and my plastic server is configured with User/Password authentication mode. A special “bot” user was created for mergebots described above.
 
 ### 1-The plugs
 Plugs are mergebot connectors to actual external systems supporting the build & merge process. In this example, I used:
-* Jira as the issue tracker (optional)
-* Jenkins to build & test the project code (mandatory)
-* An email notifier based on Gmail (optional)
+* **Jira** as the issue tracker (optional)
+* **Jenkins** to build & test the project code (mandatory)
+* An **email** notifier based on Gmail (optional)
 The configuration of these plugs are pretty easy: they just require URL’s to actual services, and credentials to access them.
 ![DevOps plugs](https://image.ibb.co/fmDAqA/00-plugs.png)
 
 ### 2-The TrunkBot
 TrunkBot is the Plastic SCM's DevOps built-in mergebot that drives the build & merge process for the tracked branches of selected repo. I created mine with the following configuration by clicking in *Add a new mergebot* button:
 ![New Mergebot - TrunkBot - Page 1](https://image.ibb.co/b2gwVA/01-new-trunkbot-1.png)
-No surprises here. I typed the repo name to track, I selected which branch will have the role of trunk branch (“/main”), the task branches prefix to track & merge to trunk branch, and the plastic user for the TrunkBot in order to query & execute operations on the tracked repo.
+No surprises here. I typed the repo name to track, I selected which branch will have the role of trunk branch (**/main**), the task branches prefix to track & merge to trunk branch, and the plastic user for the TrunkBot in order to query & execute operations on the tracked repo.
 Next, I defined which is the attribute name to identify the “status” of a branch, and its possible values:
 ![New Mergebot - TrunkBot - Page 2](https://image.ibb.co/choMxq/01-new-trunkbot-2.png)
 As you can see in the screenshot above, I also configured the *automatic labeling* feature to create a new auto-increment label on every new changeset in trunk branch.
@@ -46,25 +46,26 @@ Then, the *Source Code management* option must be set to *Mergebot Plastic SCM* 
 #### Progress so far: TrunkBot on its full glory
 At this stage, TrunkBot is fully functional and ready to process task branches. The screenshot below shows the resultant Branch Explorer after the first task branch was processed by TrunkBot and the merged code was successfully built in Jenkins:
 ![TrunkBot - First integration Cycle](https://image.ibb.co/dMeuHq/04-Trunk-Bot-First-Cycle.png)
-As the build was successful, TrunkBot checked-in the merged code in “/main” branch, it turned the branch status attribute to “merged” value, as well as the related Jira issue status. Then, it labeled the resultant changeset with an automatic label name: “REL_1.0”. Finally, TrunkBot triggered the configured “post-check-in” job in Jenkins.
+As the build was successful, TrunkBot checked-in the merged code in **/main** branch, it turned the branch status attribute to *merged* value, as well as the related Jira issue status. Then, it labeled the resultant changeset with an automatic label name: **REL_1.0**. Finally, TrunkBot triggered the configured *post-check-in job* in Jenkins.
 
 ### 3- The ConflictsBot
 Now let’s suppose the project evolves to a more complex scenario, where several users work concurrently on different task branches:
 ![TrunkBot - Second integration Cycle](https://image.ibb.co/iV4iAA/05-Trunk-Bot-Second-Cycle.png)
-As you can see, a new branch (“/main/PNU-3”) was processed by TrunkBot and successfully merged in “/main” branch. Let’s suppose this branch carries several remarkable changes in the project to implement a feature. And hence, its integration possibly causes other “resolved” queued branches (colored in blue in the screenshot above) to require manual user intervention during their merge. 
-One of these affected branches is “/main/PNU-5”. And let’s also suppose TrunkBot will process  “/main/PNU-2” and “/main/PNU-4” before, which don’t have any manual conflicts with “/main” branch so far.
-With the current setup (no “ConflictsBot” yet), we will have to wait until “/main/PNU-2” and “/main/PNU-4” are processed by TrunkBot to notice the branch “/main/PNU-5” requires resolving manual conflicts with “/main” branch.
-But, as “/main/PNU-5” is already tagged with “resolved” status attribute, we could anticipate the fact the branch requires manual conflict resolution on its merge to “/main” branch. Here’s where ConflictsBot comes into play.
+As you can see, a new branch (**/main/PNU-3**) was processed by TrunkBot and successfully merged in **/main** branch.
+Let’s suppose this branch carries several remarkable changes in the project to implement a feature. And hence, its integration possibly causes other “resolved” queued branches (colored in blue in the screenshot above) to require manual user intervention during their merge. 
+One of these affected branches is **/main/PNU-5**. And let’s also suppose TrunkBot will process  **/main/PNU-2** and **/main/PNU-4** before, which don’t have any manual conflicts with **/main** branch so far.
+With the current setup (no *ConflictsBot* yet), we will have to wait until **/main/PNU-2** and **/main/PNU-4** are processed by TrunkBot to notice the branch **/main/PNU-5** requires resolving manual conflicts with **/main** branch.
+But, as **/main/PNU-5** is already tagged with *resolved* status attribute, we could anticipate the fact the branch requires manual conflict resolution on its merge to **/main** branch. Here’s where *ConflictsBot* comes into play.
 
 #### Setup ConflictsBot
 Download and compile ConflictsBot following the instructions above.
-Once the bin files are ready, let’s use it in our Plastic server. Go to DevOps section in Plastic Server WebAdmin > Mergebot Types > Add custom mergebot type now:
+Once the bin files are ready, let’s use it in our Plastic server. Go to DevOps section in *Plastic Server WebAdmin > Mergebot Types > Add custom mergebot type now*:
 ![Plastic DevOps - Add custom mergebot](https://image.ibb.co/kB8X3V/06-Add-Custom-Merge-Bot.png)
-And then fill the form with the proper paths depending on the location of your downloaded ConflictsBot project. No extra parameters are required in the “command line to start”. See example below:
+And then fill the form with the proper paths depending on the location of your downloaded ConflictsBot project. No extra parameters are required in the `command line to start`. See example below:
 ![Plastc DevOps - Configure custom mergebot type](https://image.ibb.co/khpGVA/07-Fill-Custom-Merge-Bot.png)
 Now we’re ready to configure an actual instance of ConflictsBot.
-Go to DevOps section in Plastic Server WebAdmin > Dashboard > Add a new MergeBot.
-The configuration values regarding repo to track, “trunk” branch and task branches prefix are the same as TrunkBot:
+Go to *DevOps* section in *Plastic Server WebAdmin > Dashboard > Add a new MergeBot*.
+The configuration values regarding repo to track, *trunk* branch and task branches prefix are the same as TrunkBot:
 ![Plastc DevOps - New ConflictsBot instance - Page 1](https://image.ibb.co/bUmwVA/08-New-Conflicts-Bot-1.png)
 Next, regarding the *status* attribute of task branches, the recommended configuration is to set the same values as TrunkBot. At least for the following entries:
 * The name of the *status* attribute.
@@ -73,17 +74,17 @@ Next, regarding the *status* attribute of task branches, the recommended configu
 ![Plastc DevOps - New ConflictsBot instance - Page 2](https://image.ibb.co/nvJX3V/08-New-Conflicts-Bot-2.png)
 Regarding the Issue Tracker configuration, the recommendation here is to use the same configuration as TrunkBot. We can reuse the same Issue Tracker plug, and same *status* value **except** for the *Resolved* value: Instead of having to wait to the *Reviewed* status for a task as we do in TrunkBot, we set an early status value in the workflow to trigger the ConflictsBot merge check. In this example, the value is *Implemented*:
 ![Plastc DevOps - New ConflictsBot instance - Page 3](https://image.ibb.co/dLyh3V/08-New-Conflicts-Bot-3.png)
-As a summary:  with this configuration, ConflictsBot will trigger the first conflicts-check for each task branch when the branch status attribute is set to “resolved”, and the related Jira status is set to “Implemented”.
+As a summary:  with this configuration, ConflictsBot will trigger the first conflicts-check for each task branch when the branch status attribute is set to *resolved*, and the related Jira status is set to *Implemented*.
 Finally, regarding ConflictsBot notifications, we can configure the fixed list of recipients and whether sending a message just when conflicts are detected, or in any conflicts-check performed, even on successful ones. In the example below I used email notifications with the following configuration:
 ![Plastc DevOps - New ConflictsBot instance - Page 4](https://image.ibb.co/fu6rxq/08-New-Conflicts-Bot-4.png)
 And that’s it! ConflictsBot is ready to work and detect manual conflicts at earlier stages in the workflow!
 
 #### ConflictsBot on its full glory
 ![Plastc DevOps - TrunkBot, ConflictsBot and plugs running](https://image.ibb.co/kpr23V/09-Conflits-Bot-Cycle1-1-dashboard.png)
-Let’s see what happened since we started our new ConflictsBot in the *pnunit* repo:
-If we open the report of processed branches of ConflictsBot (named *uyox* in the screenshot above), we can see it already checked the *resolved* branches (**PNU-2**, **PNU-4** and **PNU-5**):
+Let’s see what happened since we started our new ConflictsBot in the **pnunit** repo:
+If we open the report of processed branches of ConflictsBot (named **uyox** in the screenshot above), we can see it already checked the *resolved* branches (**PNU-2**, **PNU-4** and **PNU-5**):
 ![Plastc DevOps - ConflictsBot first cycle report](https://image.ibb.co/f48h3V/09-Conflits-Bot-Cycle1-2-report.png)
-As it detected that “/main/PNU-5” has conflicts that require user-intervention, ConflictsBot set   the branch attribute to “failed”, and the Jira status to “Open”. Also, an email notification is set to the branch owner’s email and configured fixed recipients:
+As it detected that **/main/PNU-5** has conflicts that require user-intervention, ConflictsBot set  the branch attribute to **failed**, and the Jira status to *Open*. Also, an email notification is set to the branch owner’s email and configured fixed recipients:
 ![Plastic BranchExplorer ConflictsBot first cycle diagram](https://image.ibb.co/kUyRVA/10-Conflits-Bot-Cycle-1plastic.png)
 
 #### The value-added feature of ConflictsBot
