@@ -87,7 +87,9 @@ But, as **/main/PNU-5** is already tagged with *resolved* status attribute, we c
 
 #### Setup ConflictsBot
 Download and compile ConflictsBot following the instructions above.
-Once the bin files are ready, let’s use it in our Plastic server. Go to DevOps section in *Plastic Server WebAdmin > Mergebot Types > Add custom mergebot type now*:
+Once the bin files are ready, let’s use it in our Plastic server as a [custom mergebot](http://blog.plasticscm.com/2018/10/plastic-scm-devops-custom-mergebots.html).
+
+Go to DevOps section in *Plastic Server WebAdmin > Mergebot Types > Add custom mergebot type now*:
 
 ![Plastic DevOps - Add custom mergebot](https://image.ibb.co/kB8X3V/06-Add-Custom-Merge-Bot.png)
 
