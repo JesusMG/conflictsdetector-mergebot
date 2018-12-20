@@ -6,6 +6,8 @@ It runs dry-merge operations to detect conflicts on every 'resolved' task branch
 
 It's a perfect partner for Plastic SCM's built-in TrunkBot
 
+Find out more info about ConflictsBot [here](http://blog.plasticscm.com/2018/11/mergebot-to-detect-merge-conflicts.html)
+
 ## Compile ConflictsBot
 ConflictsBot it's a dotnet core console app. So you will need dotnet installed in your computer to compile the sources.
 Get it at the following [link](https://www.microsoft.com/net/download)
